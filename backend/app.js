@@ -1,9 +1,11 @@
-const express = require('express');
-const app = express();
+const path = require('path');
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // CORS
 app.use((req, res, next) => {
@@ -26,6 +28,12 @@ app.use('/api/leaves', leaveRoutes);
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
+});
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
 });
 
 module.exports = app;
