@@ -5,22 +5,19 @@ require('dotenv').config();
 const setupDatabase = async () => {
   let connection;
   try {
-    // Connect to MySQL without database first
+    // Connect directly to the database provided by Aiven
     connection = await mysql.createConnection({
       host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'defaultdb',
+      port: process.env.DB_PORT || 3306,
+      ssl: {
+        rejectUnauthorized: false
+      }
     });
 
-    console.log('✓ Connected to MySQL');
-
-    // Create database
-    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\``);
-    console.log('✓ Database created/verified');
-
-    // Switch to database
-    await connection.query(`USE \`${process.env.DB_NAME}\``);
-    console.log('✓ Switched to database');
+    console.log('✓ Connected to MySQL Cloud');
 
     // Create employees table
     await connection.query(`
