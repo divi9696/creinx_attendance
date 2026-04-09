@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../apiConfig';
 
 const LeaveStatusWidget = () => {
   const [leaves, setLeaves] = useState([]);
@@ -14,7 +15,7 @@ const LeaveStatusWidget = () => {
   const fetchLeaves = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/leaves', {
+      const response = await axios.get(`${API_URL}/leaves`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLeaves(response.data.leaves || []);

@@ -1,0 +1,32 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: creinx-attendance-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+
+  # Frontend Static Site
+  - type: static
+    name: creinx-attendance-frontend
+    env: static
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    publishPath: ./frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://creinx-attendance-backend.onrender.com/api # YOU MUST UPDATE THIS AFTER DEPLOYING BACKEND

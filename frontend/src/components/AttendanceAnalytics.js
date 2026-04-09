@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../apiConfig';
 
 const AttendanceAnalytics = () => {
   const [analytics, setAnalytics] = useState([]);
@@ -19,7 +20,7 @@ const AttendanceAnalytics = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/admin/analytics', {
+      const response = await axios.get(`${API_URL}/admin/analytics`, {
         params: {
           view,
           startDate: dateRange.startDate,

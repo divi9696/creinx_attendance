@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../apiConfig';
 import '../styles/Employees.css';
 
 const Employees = () => {
@@ -21,10 +22,12 @@ const Employees = () => {
     fetchEmployees();
   }, []);
 
+  const [editingId, setEditingId] = useState(null);
+
   const fetchEmployees = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/admin/employees', {
+      const response = await axios.get(`${API_URL}/admin/employees`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEmployees(response.data.employees);
@@ -50,7 +53,6 @@ const Employees = () => {
     setSubmitError('');
     setSubmitSuccess('');
 
-    // Validation
     if (!formData.name || !formData.email || !formData.job_role || !formData.date_of_join) {
       setSubmitError('Please fill in all required fields');
       return;
@@ -58,11 +60,17 @@ const Employees = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5001/api/admin/employees', formData, {
+      const url = editingId 
+        ? `${API_URL}/admin/employee/${editingId}`
+        : `${API_URL}/admin/employees`;
+      
+      const method = editingId ? 'put' : 'post';
+      
+      await axios[method](url, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setSubmitSuccess('Employee added successfully!');
+      setSubmitSuccess(editingId ? 'Employee updated successfully!' : 'Employee added successfully!');
       setFormData({
         name: '',
         email: '',
@@ -71,14 +79,41 @@ const Employees = () => {
         department: ''
       });
       setShowForm(false);
-
-      // Refresh employee list
+      setEditingId(null);
       fetchEmployees();
-
-      // Clear success message after 3 seconds
       setTimeout(() => setSubmitSuccess(''), 3000);
     } catch (err) {
-      setSubmitError(err.response?.data?.error || 'Failed to add employee');
+      setSubmitError(err.response?.data?.error || 'Failed to process request');
+      console.error(err);
+    }
+  };
+
+  const handleEdit = (employee) => {
+    setFormData({
+      name: employee.name,
+      email: employee.email,
+      job_role: employee.job_role || '',
+      date_of_join: employee.date_of_join || '',
+      department: employee.department || ''
+    });
+    setEditingId(employee.id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this employee?')) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5001/api/admin/employee/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSubmitSuccess('Employee deleted successfully!');
+      fetchEmployees();
+      setTimeout(() => setSubmitSuccess(''), 3000);
+    } catch (err) {
+      setError('Failed to delete employee');
       console.error(err);
     }
   };
@@ -90,7 +125,10 @@ const Employees = () => {
       <div className="employees-header">
         <h1>Employees Management</h1>
         <button 
-          onClick={() => setShowForm(!showForm)} 
+          onClick={() => {
+            setShowForm(!showForm);
+            if (showForm) setEditingId(null);
+          }} 
           className="add-employee-btn"
         >
           {showForm ? '✕ Cancel' : '+ Add Employee'}
@@ -104,11 +142,13 @@ const Employees = () => {
       {showForm && (
         <div className="add-employee-form-container">
           <form onSubmit={handleSubmit} className="add-employee-form">
-            <h2>Add New Employee</h2>
+            <h2>{editingId ? 'Edit Employee' : 'Add New Employee'}</h2>
             
-            <div className="default-password-notice">
-              <strong>ℹ️ Default Password:</strong> creinx123 (Employee must change on first login)
-            </div>
+            {!editingId && (
+              <div className="default-password-notice">
+                <strong>ℹ️ Default Password:</strong> creinx123 (Employee must change on first login)
+              </div>
+            )}
             
             <div className="form-row">
               <div className="form-group">
@@ -177,7 +217,7 @@ const Employees = () => {
               </div>
             </div>
 
-            <button type="submit" className="submit-btn">Add Employee</button>
+            <button type="submit" className="submit-btn">{editingId ? 'Update Employee' : 'Add Employee'}</button>
           </form>
         </div>
       )}
@@ -197,6 +237,7 @@ const Employees = () => {
                   <th>Date of Join</th>
                   <th>Department</th>
                   <th>Role</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -208,6 +249,10 @@ const Employees = () => {
                     <td>{employee.date_of_join || '-'}</td>
                     <td>{employee.department || '-'}</td>
                     <td><span className="role-badge">{employee.role}</span></td>
+                    <td>
+                      <button className="edit-action-btn" onClick={() => handleEdit(employee)}>Edit</button>
+                      <button className="delete-action-btn" onClick={() => handleDelete(employee.id)}>Delete</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -215,6 +260,7 @@ const Employees = () => {
           </div>
         )}
       </div>
+
     </div>
   );
 };

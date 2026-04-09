@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import API_URL from '../apiConfig';
 import LeaveRequestWidget from '../components/LeaveRequestWidget';
 
 const Dashboards = () => {
@@ -21,7 +22,7 @@ const Dashboards = () => {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/admin/dashboard', {
+      const response = await axios.get(`${API_URL}/admin/dashboard`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

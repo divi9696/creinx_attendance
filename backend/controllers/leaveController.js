@@ -1,7 +1,7 @@
 const LeaveRequest = require('../models/LeaveRequest');
 const Employee = require('../models/Employee');
 
-exports.submitLeaveRequest = (req, res) => {
+exports.submitLeaveRequest = async (req, res) => {
   try {
     const { startDate, endDate, reason } = req.body;
     const employeeId = req.user.id;
@@ -16,53 +16,53 @@ exports.submitLeaveRequest = (req, res) => {
       return res.status(400).json({ error: 'Start date must be before end date' });
     }
 
-    const overlapping = LeaveRequest.getByDateRange(employeeId, startDate, endDate);
+    const overlapping = await LeaveRequest.getByDateRange(employeeId, startDate, endDate);
     if (overlapping.length > 0) {
       return res.status(409).json({ error: 'Leave request overlaps with existing approved leave' });
     }
 
-    const leaveId = LeaveRequest.create({
+    const leaveId = await LeaveRequest.create({
       employee_id: employeeId,
       start_date: startDate,
       end_date: endDate,
       reason
     });
 
-    const leave = LeaveRequest.findById(leaveId);
+    const leave = await LeaveRequest.findById(leaveId);
     res.status(201).json({ message: 'Leave request submitted', leave });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.getEmployeeLeaves = (req, res) => {
+exports.getEmployeeLeaves = async (req, res) => {
   try {
     const employeeId = req.user.id;
-    const leaves = LeaveRequest.findByEmployeeId(employeeId);
+    const leaves = await LeaveRequest.findByEmployeeId(employeeId);
     res.json({ leaves });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.getPendingRequests = (req, res) => {
+exports.getPendingRequests = async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 20;
     const offset = req.query.offset ? parseInt(req.query.offset) : 0;
 
-    const leaves = LeaveRequest.findPendingRequests(limit, offset);
+    const leaves = await LeaveRequest.findPendingRequests(limit, offset);
     res.json({ leaves });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.approveLeave = (req, res) => {
+exports.approveLeave = async (req, res) => {
   try {
     const { leaveId } = req.params;
     const adminId = req.user.id;
 
-    const leave = LeaveRequest.findById(leaveId);
+    const leave = await LeaveRequest.findById(leaveId);
     if (!leave) {
       return res.status(404).json({ error: 'Leave request not found' });
     }
@@ -71,25 +71,25 @@ exports.approveLeave = (req, res) => {
       return res.status(409).json({ error: 'Leave request is already reviewed' });
     }
 
-    const updated = LeaveRequest.updateStatus(leaveId, 'approved', adminId);
+    const updated = await LeaveRequest.updateStatus(leaveId, 'approved', adminId);
     if (!updated) {
       return res.status(500).json({ error: 'Failed to approve leave' });
     }
 
-    const updatedLeave = LeaveRequest.findById(leaveId);
+    const updatedLeave = await LeaveRequest.findById(leaveId);
     res.json({ message: 'Leave approved', leave: updatedLeave });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.declineLeave = (req, res) => {
+exports.declineLeave = async (req, res) => {
   try {
     const { leaveId } = req.params;
     const { reason: declineReason } = req.body;
     const adminId = req.user.id;
 
-    const leave = LeaveRequest.findById(leaveId);
+    const leave = await LeaveRequest.findById(leaveId);
     if (!leave) {
       return res.status(404).json({ error: 'Leave request not found' });
     }
@@ -98,19 +98,19 @@ exports.declineLeave = (req, res) => {
       return res.status(409).json({ error: 'Leave request is already reviewed' });
     }
 
-    const updated = LeaveRequest.updateStatus(leaveId, 'declined', adminId, declineReason);
+    const updated = await LeaveRequest.updateStatus(leaveId, 'declined', adminId, declineReason);
     if (!updated) {
       return res.status(500).json({ error: 'Failed to decline leave' });
     }
 
-    const updatedLeave = LeaveRequest.findById(leaveId);
+    const updatedLeave = await LeaveRequest.findById(leaveId);
     res.json({ message: 'Leave declined', leave: updatedLeave });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.getLeaveAnalytics = (req, res) => {
+exports.getLeaveAnalytics = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
@@ -118,9 +118,10 @@ exports.getLeaveAnalytics = (req, res) => {
       return res.status(400).json({ error: 'startDate and endDate are required' });
     }
 
-    const analytics = LeaveRequest.getAnalytics(startDate, endDate);
+    const analytics = await LeaveRequest.getAnalytics(startDate, endDate);
     res.json({ analytics });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+

@@ -3,21 +3,21 @@ const Attendance = require('../models/Attendance');
 const LeaveRequest = require('../models/LeaveRequest');
 const bcrypt = require('bcrypt');
 
-exports.getDashboard = (req, res) => {
+exports.getDashboard = async (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
 
-    const todayStats = Attendance.getTodayCount(today);
-    const pendingLeaves = LeaveRequest.findPendingRequests(10, 0);
-    const employees = Employee.findAll();
+    const todayStats = await Attendance.getTodayCount(today);
+    const pendingLeaves = await LeaveRequest.findPendingRequests(10, 0);
+    const employees = await Employee.findAll();
 
     res.json({
       stats: {
         totalEmployees: employees.length,
-        presentToday: todayStats.total || 0,
-        officeToday: todayStats.office || 0,
-        homeToday: todayStats.home || 0,
-        leaveToday: todayStats.leaves || 0
+        presentToday: todayStats?.total || 0,
+        officeToday: todayStats?.office || 0,
+        homeToday: todayStats?.home || 0,
+        leaveToday: todayStats?.leaves || 0
       },
       pendingLeaves,
       timestamp: new Date()
@@ -27,9 +27,9 @@ exports.getDashboard = (req, res) => {
   }
 };
 
-exports.getEmployees = (req, res) => {
+exports.getEmployees = async (req, res) => {
   try {
-    const employees = Employee.findAll();
+    const employees = await Employee.findAll();
     const employeesWithoutPassword = employees.map(emp => {
       const { password, ...rest } = emp;
       return rest;
@@ -40,7 +40,7 @@ exports.getEmployees = (req, res) => {
   }
 };
 
-exports.getAttendanceReport = (req, res) => {
+exports.getAttendanceReport = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
@@ -48,14 +48,14 @@ exports.getAttendanceReport = (req, res) => {
       return res.status(400).json({ error: 'startDate and endDate are required' });
     }
 
-    const attendance = Attendance.getReport(startDate, endDate);
+    const attendance = await Attendance.getReport(startDate, endDate);
     res.json({ attendance, count: attendance.length });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.getAttendanceAnalytics = (req, res) => {
+exports.getAttendanceAnalytics = async (req, res) => {
   try {
     const { startDate, endDate, view = 'daily' } = req.query;
 
@@ -65,11 +65,11 @@ exports.getAttendanceAnalytics = (req, res) => {
 
     let analytics;
     if (view === 'weekly') {
-      analytics = Attendance.getWeeklyAnalytics(startDate, endDate);
+      analytics = await Attendance.getWeeklyAnalytics(startDate, endDate);
     } else if (view === 'monthly') {
-      analytics = Attendance.getMonthlyAnalytics(startDate, endDate);
+      analytics = await Attendance.getMonthlyAnalytics(startDate, endDate);
     } else {
-      analytics = Attendance.getDailyAnalytics(startDate, endDate);
+      analytics = await Attendance.getDailyAnalytics(startDate, endDate);
     }
 
     res.json({ analytics, view });
@@ -78,22 +78,22 @@ exports.getAttendanceAnalytics = (req, res) => {
   }
 };
 
-exports.getEmployeeAttendance = (req, res) => {
+exports.getEmployeeAttendance = async (req, res) => {
   try {
     const { employeeId } = req.params;
     const { startDate, endDate } = req.query;
 
-    const employee = Employee.findById(employeeId);
+    const employee = await Employee.findById(employeeId);
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });
     }
 
     let attendance;
     if (startDate && endDate) {
-      attendance = Attendance.getReport(startDate, endDate);
+      attendance = await Attendance.getReport(startDate, endDate);
       attendance = attendance.filter(a => a.employee_id === parseInt(employeeId));
     } else {
-      attendance = Attendance.getByEmployeeId(employeeId);
+      attendance = await Attendance.getByEmployeeId(employeeId);
     }
 
     res.json({ employee, attendance });
@@ -102,26 +102,22 @@ exports.getEmployeeAttendance = (req, res) => {
   }
 };
 
-exports.createEmployee = (req, res) => {
+exports.createEmployee = async (req, res) => {
   try {
     const { name, email, job_role, date_of_join, department } = req.body;
 
-    // Validate required fields
     if (!name || !email) {
       return res.status(400).json({ error: 'Name and email are required' });
     }
 
-    // Check if email already exists
-    const existingEmployee = Employee.findByEmail(email);
+    const existingEmployee = await Employee.findByEmail(email);
     if (existingEmployee) {
       return res.status(400).json({ error: 'Email already exists' });
     }
 
-    // Use default password for all new employees
     const defaultPassword = 'creinx123';
     const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
 
-    // Create employee
     const employeeData = {
       name,
       email,
@@ -132,8 +128,8 @@ exports.createEmployee = (req, res) => {
       role: 'employee'
     };
 
-    const employeeId = Employee.create(employeeData);
-    const newEmployee = Employee.findById(employeeId);
+    const employeeId = await Employee.create(employeeData);
+    const newEmployee = await Employee.findById(employeeId);
     const { password: _, ...employeeWithoutPassword } = newEmployee;
 
     res.status(201).json({
@@ -144,3 +140,51 @@ exports.createEmployee = (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.updateEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, job_role, date_of_join, department, role } = req.body;
+
+    const employee = await Employee.findById(id);
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    const employeeData = {
+      name: name || employee.name,
+      email: email || employee.email,
+      job_role: job_role || employee.job_role,
+      date_of_join: date_of_join || employee.date_of_join,
+      department: department || employee.department,
+      role: role || employee.role
+    };
+
+    await Employee.update(id, employeeData);
+    const updatedEmployee = await Employee.findById(id);
+    const { password: _, ...rest } = updatedEmployee;
+
+    res.json({
+      message: 'Employee updated successfully',
+      employee: rest
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.deleteEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const employee = await Employee.findById(id);
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    await Employee.delete(id);
+    res.json({ message: 'Employee deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../apiConfig';
 import AttendanceTypeSelector from './AttendanceTypeSelector';
 
 const AttendanceForm = ({ onSuccess }) => {
@@ -18,7 +19,7 @@ const AttendanceForm = ({ onSuccess }) => {
   const checkApprovedLeave = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/leaves', {
+      const response = await axios.get(`${API_URL}/leaves`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -81,7 +82,7 @@ const AttendanceForm = ({ onSuccess }) => {
       };
 
       const response = await axios.post(
-        'http://localhost:5001/api/employee/attendance',
+        `${API_URL}/employee/attendance`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

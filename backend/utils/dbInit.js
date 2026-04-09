@@ -1,100 +1,70 @@
 const db = require('../config/db');
 
 // Initialize database schema
-const initializeDatabase = () => {
+const initializeDatabase = async () => {
   try {
     // Create employees table
-    db.exec(`
+    await db.query(`
       CREATE TABLE IF NOT EXISTS employees (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT CHECK(role IN ('admin', 'employee')) DEFAULT 'employee',
-        department TEXT,
-        job_role TEXT,
-        date_of_join TEXT,
-        first_login INTEGER DEFAULT 1,
-        office_lat REAL,
-        office_lon REAL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role ENUM('admin', 'employee') DEFAULT 'employee',
+        department VARCHAR(100),
+        job_role VARCHAR(100),
+        date_of_join DATE,
+        first_login TINYINT(1) DEFAULT 1,
+        office_lat DECIMAL(10, 8),
+        office_lon DECIMAL(11, 8),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
 
     // Create leave_requests table
-    db.exec(`
+    await db.query(`
       CREATE TABLE IF NOT EXISTS leave_requests (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        employee_id INTEGER NOT NULL,
-        start_date TEXT NOT NULL,
-        end_date TEXT NOT NULL,
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        employee_id INT NOT NULL,
+        start_date DATE NOT NULL,
+        end_date DATE NOT NULL,
         reason TEXT NOT NULL,
-        status TEXT CHECK(status IN ('pending', 'approved', 'declined')) DEFAULT 'pending',
+        status ENUM('pending', 'approved', 'declined') DEFAULT 'pending',
         decline_reason TEXT,
-        requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        reviewed_by INTEGER,
-        reviewed_at DATETIME,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        reviewed_by INT,
+        reviewed_at TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (employee_id) REFERENCES employees(id),
         FOREIGN KEY (reviewed_by) REFERENCES employees(id)
       )
     `);
 
     // Create attendance table
-    db.exec(`
+    await db.query(`
       CREATE TABLE IF NOT EXISTS attendance (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        employee_id INTEGER NOT NULL,
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        employee_id INT NOT NULL,
         check_in DATETIME NOT NULL,
         check_out DATETIME,
-        latitude REAL,
-        longitude REAL,
-        ip_address TEXT,
-        status TEXT CHECK(status IN ('present', 'absent', 'late', 'leave')) DEFAULT 'present',
-        attendance_type TEXT CHECK(attendance_type IN ('work_office', 'work_home', 'leave')) DEFAULT 'work_office',
-        leave_request_id INTEGER,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        latitude DECIMAL(10, 8),
+        longitude DECIMAL(11, 8),
+        ip_address VARCHAR(50),
+        status ENUM('present', 'absent', 'late', 'leave') DEFAULT 'present',
+        attendance_type ENUM('work_office', 'work_home', 'leave') DEFAULT 'work_office',
+        leave_request_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (employee_id) REFERENCES employees(id),
         FOREIGN KEY (leave_request_id) REFERENCES leave_requests(id)
       )
     `);
 
-    // Create indexes
-    db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_leave_employee_id ON leave_requests(employee_id);
-      CREATE INDEX IF NOT EXISTS idx_leave_status ON leave_requests(status);
-      CREATE INDEX IF NOT EXISTS idx_leave_start_date ON leave_requests(start_date);
-      CREATE INDEX IF NOT EXISTS idx_attendance_employee_id ON attendance(employee_id);
-      CREATE INDEX IF NOT EXISTS idx_attendance_check_in ON attendance(check_in);
-      CREATE INDEX IF NOT EXISTS idx_attendance_type ON attendance(attendance_type);
-    `);
-
-    // Add missing columns to employees table if they don't exist
-    try {
-      db.exec(`
-        ALTER TABLE employees ADD COLUMN job_role TEXT;
-      `);
-    } catch (err) {
-      // Column might already exist, ignore
-    }
-
-    try {
-      db.exec(`
-        ALTER TABLE employees ADD COLUMN date_of_join TEXT;
-      `);
-    } catch (err) {
-      // Column might already exist, ignore
-    }
-
-    try {
-      db.exec(`
-        ALTER TABLE employees ADD COLUMN first_login INTEGER DEFAULT 1;
-      `);
-    } catch (err) {
-      // Column might already exist, ignore
-    }
+    // Indexes are automatically created for foreign keys in MySQL, 
+    // but we can add explicit ones for optimization
+    try { await db.query('CREATE INDEX idx_leave_status ON leave_requests(status)'); } catch (e) {}
+    try { await db.query('CREATE INDEX idx_attendance_check_in ON attendance(check_in)'); } catch (e) {}
 
     console.log('✓ Database tables created/verified');
   } catch (error) {
@@ -103,3 +73,4 @@ const initializeDatabase = () => {
 };
 
 module.exports = { initializeDatabase };
+

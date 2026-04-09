@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../apiConfig';
 
 const LeaveRequestWidget = ({ onApprovalAction }) => {
   const [leaves, setLeaves] = useState([]);
@@ -15,7 +16,7 @@ const LeaveRequestWidget = ({ onApprovalAction }) => {
   const fetchPendingLeaves = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/leaves/admin/pending', {
+      const response = await axios.get(`${API_URL}/leaves/admin/pending`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLeaves(response.data.leaves || []);
@@ -31,7 +32,7 @@ const LeaveRequestWidget = ({ onApprovalAction }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5001/api/leaves/admin/${leaveId}/approve`,
+        `${API_URL}/leaves/admin/${leaveId}/approve`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -50,7 +51,7 @@ const LeaveRequestWidget = ({ onApprovalAction }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5001/api/leaves/admin/${leaveId}/decline`,
+        `${API_URL}/leaves/admin/${leaveId}/decline`,
         { reason: declineReason[leaveId] || 'Declined by admin' },
         { headers: { Authorization: `Bearer ${token}` } }
       );

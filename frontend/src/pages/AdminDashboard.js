@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import API_URL from '../apiConfig';
 import AttendanceReport from '../components/AttendanceReport';
 import LeaveRequestWidget from '../components/LeaveRequestWidget';
 import AttendanceAnalytics from '../components/AttendanceAnalytics';
@@ -23,7 +24,7 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/admin/dashboard', {
+      const response = await axios.get(`${API_URL}/admin/dashboard`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

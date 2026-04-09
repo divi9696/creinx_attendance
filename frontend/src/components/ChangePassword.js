@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../apiConfig';
 import '../styles/ChangePassword.css';
 
 const ChangePassword = ({ user, onPasswordChanged }) => {
@@ -45,7 +46,7 @@ const ChangePassword = ({ user, onPasswordChanged }) => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5001/api/auth/change-password', formData, {
+      await axios.post(`${API_URL}/auth/change-password`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

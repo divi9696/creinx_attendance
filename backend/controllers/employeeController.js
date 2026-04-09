@@ -3,7 +3,7 @@ const Employee = require('../models/Employee');
 const attendanceValidation = require('../utils/attendanceValidation');
 const { getClientIP } = require('../middleware/ipMiddleware');
 
-exports.markAttendance = (req, res) => {
+exports.markAttendance = async (req, res) => {
   try {
     const { type, latitude, longitude, leaveRequestId } = req.body;
     const employeeId = req.user.id;
@@ -12,7 +12,7 @@ exports.markAttendance = (req, res) => {
       return res.status(400).json({ error: 'Attendance type is required' });
     }
 
-    const employee = Employee.findById(employeeId);
+    const employee = await Employee.findById(employeeId);
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });
     }
@@ -30,7 +30,7 @@ exports.markAttendance = (req, res) => {
 
     const attendanceData = {
       employee_id: employeeId,
-      check_in: new Date().toISOString(),
+      check_in: new Date().toISOString().slice(0, 19).replace('T', ' '), // MySQL format
       attendance_type: type,
       ip_address: getClientIP(req)
     };
@@ -44,8 +44,8 @@ exports.markAttendance = (req, res) => {
       attendanceData.leave_request_id = leaveRequestId;
     }
 
-    const attendanceId = Attendance.markAttendanceWithType(attendanceData);
-    const attendance = Attendance.getByEmployeeId(employeeId, 1);
+    await Attendance.markAttendanceWithType(attendanceData);
+    const attendance = await Attendance.getByEmployeeId(employeeId, 1);
 
     res.status(201).json({
       message: `Attendance marked as ${attendanceValidation.getAttendanceTypeLabel(type)}`,
@@ -56,36 +56,36 @@ exports.markAttendance = (req, res) => {
   }
 };
 
-exports.getAttendanceHistory = (req, res) => {
+exports.getAttendanceHistory = async (req, res) => {
   try {
     const employeeId = req.user.id;
     const limit = req.query.limit ? parseInt(req.query.limit) : 30;
 
-    const attendance = Attendance.getByEmployeeId(employeeId, limit);
+    const attendance = await Attendance.getByEmployeeId(employeeId, limit);
     res.json({ attendance });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.getAttendanceByType = (req, res) => {
+exports.getAttendanceByType = async (req, res) => {
   try {
     const employeeId = req.user.id;
     const { type } = req.params;
     const limit = req.query.limit ? parseInt(req.query.limit) : 30;
 
-    const attendance = Attendance.getByType(employeeId, type, limit);
+    const attendance = await Attendance.getByType(employeeId, type, limit);
     res.json({ attendance });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.getProfile = (req, res) => {
+exports.getProfile = async (req, res) => {
   try {
     const employeeId = req.user.id;
 
-    const employee = Employee.findById(employeeId);
+    const employee = await Employee.findById(employeeId);
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });
     }
@@ -96,3 +96,4 @@ exports.getProfile = (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+

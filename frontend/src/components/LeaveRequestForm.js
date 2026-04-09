@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_URL from '../apiConfig';
 
 const LeaveRequestForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ const LeaveRequestForm = ({ onSuccess }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5001/api/leaves/submit', formData, {
+      const response = await axios.post(`${API_URL}/leaves/submit`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

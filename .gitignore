@@ -1,1 +1,8 @@
 node_modules
+.env
+.env.local
+build/
+dist/
+.DS_Store
+*.log
+backend/attendance.db

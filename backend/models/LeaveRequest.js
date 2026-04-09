@@ -1,54 +1,53 @@
 const db = require('../config/db');
 
 class LeaveRequest {
-  static create(leaveData) {
-    const stmt = db.prepare(`
+  static async create(leaveData) {
+    const [result] = await db.execute(`
       INSERT INTO leave_requests (employee_id, start_date, end_date, reason)
       VALUES (?, ?, ?, ?)
-    `);
-    const result = stmt.run(
+    `, [
       leaveData.employee_id,
       leaveData.start_date,
       leaveData.end_date,
       leaveData.reason
+    ]);
+    return result.insertId;
+  }
+
+  static async findById(id) {
+    const [rows] = await db.execute('SELECT * FROM leave_requests WHERE id = ?', [id]);
+    return rows[0];
+  }
+
+  static async findByEmployeeId(employeeId) {
+    const [rows] = await db.execute(
+      'SELECT * FROM leave_requests WHERE employee_id = ? ORDER BY created_at DESC',
+      [employeeId]
     );
-    return result.lastInsertRowid;
+    return rows;
   }
 
-  static findById(id) {
-    const stmt = db.prepare('SELECT * FROM leave_requests WHERE id = ?');
-    return stmt.get(id);
-  }
-
-  static findByEmployeeId(employeeId) {
-    const stmt = db.prepare(
-      'SELECT * FROM leave_requests WHERE employee_id = ? ORDER BY created_at DESC'
-    );
-    return stmt.all(employeeId);
-  }
-
-  static findPendingRequests(limit = 20, offset = 0) {
-    const stmt = db.prepare(`
+  static async findPendingRequests(limit = 20, offset = 0) {
+    const [rows] = await db.execute(`
       SELECT lr.*, e.name as employee_name, e.email as employee_email
       FROM leave_requests lr
       JOIN employees e ON lr.employee_id = e.id
       WHERE lr.status = 'pending'
       ORDER BY lr.created_at DESC
       LIMIT ? OFFSET ?
-    `);
-    return stmt.all(limit, offset);
+    `, [parseInt(limit), parseInt(offset)]);
+    return rows;
   }
 
-  static updateStatus(id, status, reviewedBy = null, declineReason = null) {
-    const stmt = db.prepare(`
+  static async updateStatus(id, status, reviewedBy = null, declineReason = null) {
+    const [result] = await db.execute(`
       UPDATE leave_requests SET status = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP, decline_reason = ? WHERE id = ?
-    `);
-    const result = stmt.run(status, reviewedBy, declineReason, id);
-    return result.changes > 0;
+    `, [status, reviewedBy, declineReason, id]);
+    return result.affectedRows > 0;
   }
 
-  static getByDateRange(employeeId, startDate, endDate) {
-    const stmt = db.prepare(`
+  static async getByDateRange(employeeId, startDate, endDate) {
+    const [rows] = await db.execute(`
       SELECT * FROM leave_requests
       WHERE employee_id = ?
       AND status = 'approved'
@@ -57,23 +56,23 @@ class LeaveRequest {
         OR (start_date >= ? AND start_date <= ?)
         OR (end_date >= ? AND end_date <= ?)
       )
-    `);
-    return stmt.all(employeeId, endDate, startDate, startDate, endDate, startDate, endDate);
+    `, [employeeId, endDate, startDate, startDate, endDate, startDate, endDate]);
+    return rows;
   }
 
-  static getByDateRangeForEmployee(employeeId, date) {
-    const stmt = db.prepare(`
+  static async getByDateRangeForEmployee(employeeId, date) {
+    const [rows] = await db.execute(`
       SELECT * FROM leave_requests
       WHERE employee_id = ?
       AND status = 'approved'
       AND start_date <= ?
       AND end_date >= ?
-    `);
-    return stmt.get(employeeId, date, date);
+    `, [employeeId, date, date]);
+    return rows[0];
   }
 
-  static getAnalytics(startDate, endDate) {
-    const stmt = db.prepare(`
+  static async getAnalytics(startDate, endDate) {
+    const [rows] = await db.execute(`
       SELECT
         status,
         COUNT(*) as count,
@@ -81,15 +80,15 @@ class LeaveRequest {
       FROM leave_requests
       WHERE start_date >= ? AND end_date <= ?
       GROUP BY status
-    `);
-    return stmt.all(startDate, endDate);
+    `, [startDate, endDate]);
+    return rows;
   }
 
-  static delete(id) {
-    const stmt = db.prepare('DELETE FROM leave_requests WHERE id = ?');
-    const result = stmt.run(id);
-    return result.changes > 0;
+  static async delete(id) {
+    const [result] = await db.execute('DELETE FROM leave_requests WHERE id = ?', [id]);
+    return result.affectedRows > 0;
   }
 }
 
 module.exports = LeaveRequest;
+

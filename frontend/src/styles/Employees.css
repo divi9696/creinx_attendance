@@ -230,6 +230,37 @@ tbody tr:hover {
   color: #666;
 }
 
+.edit-action-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+
+.edit-action-btn:hover {
+  background-color: #2980b9;
+}
+
+.delete-action-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+
+.delete-action-btn:hover {
+  background-color: #c0392b;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .employees-header {

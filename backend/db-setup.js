@@ -2,14 +2,14 @@ const db = require('./config/db');
 const bcrypt = require('bcrypt');
 const { initializeDatabase } = require('./utils/dbInit');
 
-const setupDatabase = () => {
+const setupDatabase = async () => {
   try {
     // Initialize tables
-    initializeDatabase();
+    await initializeDatabase();
 
     // Check if users exist
-    const stmt = db.prepare('SELECT COUNT(*) as count FROM employees');
-    const result = stmt.get();
+    const [rows] = await db.query('SELECT COUNT(*) as count FROM employees');
+    const result = rows[0];
 
     if (result.count === 0) {
       // Hash passwords
@@ -17,14 +17,14 @@ const setupDatabase = () => {
       const empPass = bcrypt.hashSync('emp123', 10);
 
       // Insert test users
-      const insertStmt = db.prepare(`
+      await db.query(`
         INSERT INTO employees (name, email, password, role, department)
-        VALUES (?, ?, ?, ?, ?)
-      `);
-
-      insertStmt.run('Admin User', 'admin@company.com', adminPass, 'admin', 'Management');
-      insertStmt.run('John Doe', 'john@company.com', empPass, 'employee', 'IT');
-      insertStmt.run('Jane Smith', 'jane@company.com', empPass, 'employee', 'HR');
+        VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)
+      `, [
+        'Admin User', 'admin@company.com', adminPass, 'admin', 'Management',
+        'John Doe', 'john@company.com', empPass, 'employee', 'IT',
+        'Jane Smith', 'jane@company.com', empPass, 'employee', 'HR'
+      ]);
 
       console.log('✅ Test users created:');
       console.log('   Admin: admin@company.com / admin123');
@@ -39,3 +39,4 @@ const setupDatabase = () => {
 };
 
 module.exports = setupDatabase;
+

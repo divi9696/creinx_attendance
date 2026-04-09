@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Employee = require('../models/Employee');
 
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -10,7 +10,7 @@ exports.login = (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const employee = Employee.findByEmail(email);
+    const employee = await Employee.findByEmail(email);
     if (!employee) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -50,7 +50,7 @@ exports.logout = (req, res) => {
   }
 };
 
-exports.changePassword = (req, res) => {
+exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const employeeId = req.user.id;
@@ -69,7 +69,7 @@ exports.changePassword = (req, res) => {
     }
 
     // Get employee
-    const employee = Employee.findById(employeeId);
+    const employee = await Employee.findById(employeeId);
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });
     }
@@ -84,10 +84,11 @@ exports.changePassword = (req, res) => {
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
 
     // Update password and mark first_login as false
-    Employee.updatePassword(employeeId, hashedPassword);
+    await Employee.updatePassword(employeeId, hashedPassword);
 
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
