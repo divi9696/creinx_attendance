@@ -21,7 +21,7 @@ services:
         sync: false
 
   # Frontend Static Site
-  - type: static
+  - type: web
     name: creinx-attendance-frontend
     env: static
     plan: free
