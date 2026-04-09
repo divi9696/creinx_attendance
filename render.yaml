@@ -19,5 +19,7 @@ services:
         sync: false
       - key: DB_NAME
         sync: false
+      - key: DB_PORT
+        sync: false
       - key: REACT_APP_API_URL
         value: "" # Leave empty, defaults to local /api in frontend config
