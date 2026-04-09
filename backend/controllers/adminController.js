@@ -1,7 +1,7 @@
 const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
 const LeaveRequest = require('../models/LeaveRequest');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 exports.getDashboard = async (req, res) => {
   try {
