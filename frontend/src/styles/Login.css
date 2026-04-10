@@ -258,6 +258,32 @@
   transition: 0.3s;
 }
 
-.footer-link:hover {
-  color: #00d2ff;
+/* 📱 Mobile & Performance Tuning */
+@media (max-width: 480px) {
+  .login-card-layered {
+    width: 90vw !important;
+    padding: 35px 25px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  }
+  
+  .login-universe {
+    padding: 20px;
+  }
+
+  .float-obj {
+    display: none; /* Hide expensive parallax on mobile */
+  }
+
+  /* Disable 3D transforms on mobile for better UX */
+  .login-card-layered {
+    transform: none !important;
+    perspective: none !important;
+  }
+}
+
+/* Optimization for low-power devices */
+@media (prefers-reduced-motion: reduce) {
+  .float-obj, .bg-glow {
+    animation: none;
+  }
 }
