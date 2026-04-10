@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --primary-glow: #00d2ff;
-  --primary-deep: #0056ff;
-  --bg-dark: #06070a;
-  --bg-card: rgba(10, 12, 18, 0.95);
+  --primary-glow: #4deaff;
+  --primary-deep: #337aff;
+  --bg-dark: #030406;
+  --bg-card: rgba(13, 15, 22, 0.95);
   
-  --text-main: #ffffff;
-  --text-muted: #94a3b8;
+  --text-main: #f8fafc;
+  --text-muted: #cbd5e1;
   
   --shadow-premium: 0 0 50px rgba(0, 210, 255, 0.1);
   --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);

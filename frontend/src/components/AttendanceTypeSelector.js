@@ -53,29 +53,29 @@ const AttendanceTypeSelector = ({ onTypeSelect, hasApprovedLeave }) => {
         .selector-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
         
         .type-card { 
-          position: relative; overflow: hidden; background: rgba(255, 255, 255, 0.03); 
-          border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; 
+          position: relative; overflow: hidden; background: rgba(30, 41, 59, 0.4); 
+          border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 24px; 
           cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .type-card:hover:not(.disabled) { transform: translateY(-5px); background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.2); }
-        .type-card.active { background: rgba(255, 255, 255, 0.08); border-color: var(--primary-glow); box-shadow: 0 0 20px rgba(0, 210, 255, 0.1); }
-        .type-card.disabled { opacity: 0.4; cursor: not-allowed; grayscale: 1; }
+        .type-card:hover:not(.disabled) { transform: translateY(-5px); background: rgba(51, 65, 85, 0.6); border-color: #4deaff; }
+        .type-card.active { background: rgba(0, 210, 255, 0.1); border-color: #4deaff; box-shadow: 0 0 30px rgba(0, 210, 255, 0.15); }
+        .type-card.disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .card-content { display: flex; align-items: flex-start; gap: 12px; z-index: 2; position: relative; }
-        .type-icon { font-size: 1.5rem; }
-        .type-text { flex: 1; flex-direction: column; display: flex; }
-        .type-label { font-weight: 700; font-size: 0.9rem; color: #fff; margin-bottom: 4px; }
-        .type-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
+        .card-content { display: flex; align-items: flex-start; gap: 15px; z-index: 2; position: relative; }
+        .type-icon { font-size: 1.8rem; }
+        .type-text { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .type-label { font-weight: 800; font-size: 1rem; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .type-desc { font-size: 0.8rem; color: #cbd5e1; font-weight: 500; line-height: 1.4; }
 
-        .selection-indicator { width: 18px; height: 18px; border: 2px solid var(--glass-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
-        .active .selection-indicator { border-color: var(--primary-glow); }
-        .inner-dot { width: 8px; height: 8px; background: var(--primary-glow); border-radius: 50%; transform: scale(0); transition: var(--transition); }
-        .active .inner-dot { transform: scale(1); box-shadow: 0 0 8px var(--primary-glow); }
+        .selection-indicator { width: 22px; height: 22px; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
+        .active .selection-indicator { border-color: #4deaff; background: rgba(0, 210, 255, 0.1); }
+        .inner-dot { width: 10px; height: 10px; background: #4deaff; border-radius: 50%; transform: scale(0); transition: var(--transition); }
+        .active .inner-dot { transform: scale(1); box-shadow: 0 0 12px #4deaff; }
 
-        .notice-box { padding: 15px 20px; background: rgba(0, 210, 255, 0.05); border-color: rgba(0, 210, 255, 0.1); }
-        .notice-box p { font-size: 0.8rem; color: var(--text-muted); margin: 0; line-height: 1.5; }
-        .notice-box strong { color: var(--primary-glow); }
+        .notice-box { padding: 18px 25px; background: rgba(13, 148, 136, 0.1); border: 1px solid rgba(13, 148, 136, 0.2); border-radius: 16px; }
+        .notice-box p { font-size: 0.85rem; color: #cbd5e1; margin: 0; line-height: 1.6; font-weight: 500; }
+        .notice-box strong { color: #4deaff; font-weight: 800; }
 
         @media (max-width: 800px) { .selector-grid { grid-template-columns: 1fr; } }
       `}</style>

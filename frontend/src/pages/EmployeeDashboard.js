@@ -146,11 +146,17 @@ const EmployeeDashboard = () => {
 
         .portal-subtitle {
           font-size: 0.75rem;
-          color: var(--primary-glow);
-          letter-spacing: 2px;
+          color: #4deaff; /* Vibrantly Bright */
+          letter-spacing: 3px;
           text-transform: uppercase;
-          font-weight: 700;
+          font-weight: 800;
           margin-top: 5px;
+          text-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+        }
+
+        .brand-fonts {
+          color: #ffffff !important;
+          text-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
         .system-status {
