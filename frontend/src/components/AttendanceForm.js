@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
 import AttendanceTypeSelector from './AttendanceTypeSelector';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldCheck, MapPin, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 
 const AttendanceForm = ({ onSuccess }) => {
   const [location, setLocation] = useState(null);
@@ -12,7 +14,6 @@ const AttendanceForm = ({ onSuccess }) => {
   const [hasApprovedLeave, setHasApprovedLeave] = useState(false);
 
   useEffect(() => {
-    // Check if employee has approved leave today
     checkApprovedLeave();
   }, []);
 
@@ -47,7 +48,7 @@ const AttendanceForm = ({ onSuccess }) => {
     try {
       if (attendanceType.type === 'work_office') {
         if (!navigator.geolocation) {
-          setError('Geolocation is not supported by your browser');
+          setError('Sector Error: Geolocation not supported by terminal.');
           setLoading(false);
           return;
         }
@@ -58,7 +59,7 @@ const AttendanceForm = ({ onSuccess }) => {
             await submitAttendance(latitude, longitude);
           },
           (error) => {
-            setError('Failed to get your location. Please enable location access.');
+            setError('Signal Lost: Enable location access for sector verification.');
             setLoading(false);
           }
         );
@@ -66,7 +67,7 @@ const AttendanceForm = ({ onSuccess }) => {
         await submitAttendance(null, null);
       }
     } catch (error) {
-      setError('Error marking attendance');
+      setError('Logistics Failure: System error during transmission.');
       setLoading(false);
     }
   };
@@ -93,39 +94,170 @@ const AttendanceForm = ({ onSuccess }) => {
 
       if (onSuccess) onSuccess();
 
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => setSuccess(''), 5000);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to mark attendance');
+      setError(err.response?.data?.error || 'Sector Denied: Permission issue.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="attendance-form">
-      <h2>Mark Attendance</h2>
-
+    <div className="attendance-form-lite">
       <AttendanceTypeSelector
         onTypeSelect={handleAttendanceTypeSelect}
         hasApprovedLeave={hasApprovedLeave}
       />
 
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
+      <div className="status-container-haptic">
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="error-alert-haptic"
+            >
+              <AlertTriangle size={18} />
+              <span>{error}</span>
+            </motion.div>
+          )}
 
-      <button
+          {success && (
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="success-alert-haptic"
+            >
+              <CheckCircle2 size={18} />
+              <span>LOGGED SUCCESSFULLY</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <motion.button
+        whileHover={{ scale: 1.02, backgroundColor: "rgba(0, 210, 255, 1)" }}
+        whileTap={{ scale: 0.95 }}
         onClick={handleMarkAttendance}
         disabled={loading || (attendanceType.type === 'leave' && !hasApprovedLeave)}
-        className="mark-attendance-btn"
+        className="mark-action-btn-elite"
       >
-        {loading ? 'Processing...' : 'Mark Attendance'}
-      </button>
+        {loading ? (
+          <div className="action-loading">
+            <Loader2 className="spinner-icon" />
+            <span>VERIFYING SIGNAL...</span>
+          </div>
+        ) : (
+          <>
+            <ShieldCheck size={20} />
+            <span>INITIALIZE LOGGING</span>
+          </>
+        )}
+      </motion.button>
 
-      {location && (
-        <div className="location-info">
-          <p>📍 Location verified: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</p>
-        </div>
-      )}
+      <AnimatePresence>
+        {location && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            className="coord-badge-glass"
+          >
+            <MapPin size={14} />
+            Sector Locked: {location.latitude.toFixed(4)}N, {location.longitude.toFixed(4)}E
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style jsx>{`
+        .attendance-form-lite {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .status-container-haptic {
+          min-height: 45px;
+        }
+
+        .error-alert-haptic, .success-alert-haptic {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 20px;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+        }
+
+        .error-alert-haptic {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .success-alert-haptic {
+          background: rgba(34, 197, 94, 0.1);
+          color: #22c55e;
+          border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .mark-action-btn-elite {
+          height: 60px;
+          background: var(--primary-glow);
+          border: none;
+          border-radius: 16px;
+          color: #000;
+          font-weight: 800;
+          font-size: 0.9rem;
+          letter-spacing: 1.5px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          box-shadow: 0 10px 20px rgba(0, 210, 255, 0.2);
+          transition: all 0.3s ease;
+        }
+
+        .mark-action-btn-elite:disabled {
+          background: #1e293b;
+          color: #475569;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+
+        .action-loading {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .spinner-icon {
+          animation: spin 1s infinite linear;
+        }
+
+        .coord-badge-glass {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 8px 15px;
+          border-radius: 30px;
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: var(--text-muted);
+          margin-top: 10px;
+          overflow: hidden;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
