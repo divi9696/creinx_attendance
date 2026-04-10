@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import AttendanceForm from '../components/AttendanceForm';
 import LeaveRequestForm from '../components/LeaveRequestForm';
 import LeaveStatusWidget from '../components/LeaveStatusWidget';
+import { motion } from 'framer-motion';
+import { Clock, Calendar, MessageSquare, ShieldCheck, HelpCircle } from 'lucide-react';
 
 const EmployeeDashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -14,156 +16,263 @@ const EmployeeDashboard = () => {
     setRefreshKey(prev => prev + 1);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
+
   return (
-    <div className="employee-portal animate-fade-in">
-      <header className="page-header">
-        <div className="header-text">
-          <h1>My Workspace</h1>
-          <p>Creinx Attendance & Leave Management</p>
-        </div>
-        <div className="status-badge">🟢 ONLINE</div>
-      </header>
+    <div className="portal-universe">
+      {/* Background Ambience */}
+      <div className="portal-ambience">
+        <div className="ambience-blob a1"></div>
+        <div className="ambience-blob a2"></div>
+      </div>
 
-      <div className="portal-grid">
-        <div className="portal-main">
-          <div className="glass-panel attendance-container">
-            <div className="section-header">
-              <span className="icon">⏱️</span>
-              <h2>Daily Check-in</h2>
-            </div>
-            <AttendanceForm onSuccess={handleAttendanceSuccess} />
+      <div className="employee-portal">
+        <motion.header 
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="portal-glass-header"
+        >
+          <div className="header-identity">
+            <h1 className="brand-fonts">My Workspace</h1>
+            <p className="portal-subtitle">Creinx Intelligence Platform</p>
+          </div>
+          <div className="system-status">
+            <ShieldCheck size={16} />
+            <span>SECURE SECTOR 7</span>
+            <div className="status-pulse"></div>
+          </div>
+        </motion.header>
+
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="portal-grid"
+        >
+          <div className="portal-main">
+            <motion.div variants={cardVariants} className="layer-card attendance-card-grand">
+              <div className="card-top">
+                <div className="card-icon-box"><Clock size={20} /></div>
+                <h3>Daily Attendance</h3>
+              </div>
+              <AttendanceForm onSuccess={handleAttendanceSuccess} />
+            </motion.div>
+
+            <motion.div variants={cardVariants} className="layer-card leave-card-grand">
+              <div className="card-top">
+                <div className="card-icon-box"><Calendar size={20} /></div>
+                <h3>Leave Management</h3>
+              </div>
+              <LeaveRequestForm onSuccess={handleLeaveSuccess} />
+            </motion.div>
           </div>
 
-          <div className="glass-panel leave-container">
-            <div className="section-header">
-              <span className="icon">📅</span>
-              <h2>Request Time Off</h2>
-            </div>
-            <LeaveRequestForm onSuccess={handleLeaveSuccess} />
-          </div>
-        </div>
-
-        <aside className="portal-sidebar">
-          <div className="glass-panel status-container">
-            <div className="section-header">
-              <span className="icon">📝</span>
-              <h2>My Requests</h2>
-            </div>
-            <LeaveStatusWidget key={refreshKey} />
-          </div>
-          
-          <div className="glass-panel help-card">
-            <h3>Need Support?</h3>
-            <p>Contact HR for policy inquiries or manual attendance adjustments.</p>
-            <button className="help-btn">Contact HR</button>
-          </div>
-        </aside>
+          <aside className="portal-sidebar-modern">
+            <motion.div variants={cardVariants} className="layer-card status-widget-box">
+              <div className="card-top">
+                <div className="card-icon-box"><MessageSquare size={18} /></div>
+                <h3>Recent Activity</h3>
+              </div>
+              <LeaveStatusWidget key={refreshKey} />
+            </motion.div>
+            
+            <motion.div variants={cardVariants} className="support-card-elite">
+              <div className="support-content">
+                <HelpCircle className="support-icon" />
+                <h4>Enterprise Support</h4>
+                <p>Need assistance with policies or attendance corrections?</p>
+                <button className="support-action-btn">Connect with HR</button>
+              </div>
+            </motion.div>
+          </aside>
+        </motion.div>
       </div>
 
       <style jsx>{`
+        .portal-universe {
+          min-height: 100vh;
+          background: #06070a;
+          position: relative;
+          overflow-x: hidden;
+        }
+
+        .portal-ambience {
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .ambience-blob {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(100px);
+          opacity: 0.05;
+        }
+
+        .a1 { width: 600px; height: 600px; background: #00d2ff; top: -10%; right: -10%; }
+        .a2 { width: 500px; height: 500px; background: #0056ff; bottom: -10%; left: -10%; }
+
         .employee-portal {
-          padding: 40px 20px;
-          max-width: 1400px;
+          position: relative;
+          z-index: 10;
+          padding: 40px 30px;
+          max-width: 1440px;
           margin: 0 auto;
         }
 
-        .page-header {
+        .portal-glass-header {
           display: flex;
           justify-content: space-between;
-          align-items: flex-end;
+          align-items: center;
+          background: rgba(13, 15, 22, 0.4);
+          backdrop-filter: blur(20px);
+          padding: 25px 40px;
+          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
           margin-bottom: 40px;
         }
 
-        .header-text h1 {
-          font-size: 2.5rem;
-          letter-spacing: -1px;
+        .portal-subtitle {
+          font-size: 0.75rem;
+          color: var(--primary-glow);
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          font-weight: 700;
+          margin-top: 5px;
         }
 
-        .status-badge {
-          background: rgba(34, 197, 94, 0.1);
-          color: #22c55e;
-          padding: 6px 16px;
-          border-radius: 20px;
-          font-size: 0.75rem;
+        .system-status {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: rgba(255, 255, 255, 0.03);
+          padding: 8px 18px;
+          border-radius: 30px;
+          font-size: 0.7rem;
           font-weight: 800;
-          border: 1px solid rgba(34, 197, 94, 0.2);
+          letter-spacing: 1px;
+          color: var(--text-muted);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-pulse {
+          width: 8px;
+          height: 8px;
+          background: #22c55e;
+          border-radius: 50%;
+          box-shadow: 0 0 10px #22c55e;
+          animation: pulse 2s infinite;
         }
 
         .portal-grid {
           display: grid;
-          grid-template-columns: 1fr 400px;
-          gap: 24px;
+          grid-template-columns: 1fr 420px;
+          gap: 30px;
         }
 
         .portal-main {
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 30px;
         }
 
-        .attendance-container, .leave-container, .status-container {
-          padding: 30px;
-        }
-
-        .section-header {
+        .card-top {
           display: flex;
           align-items: center;
-          gap: 12px;
-          margin-bottom: 24px;
-          border-bottom: 1px solid var(--glass-border);
+          gap: 15px;
+          margin-bottom: 25px;
           padding-bottom: 15px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .section-header .icon {
-          font-size: 1.5rem;
+        .card-icon-box {
+          width: 40px;
+          height: 40px;
+          background: rgba(0, 210, 255, 0.05);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 12px;
+          color: var(--primary-glow);
         }
 
-        .section-header h2 {
-          font-size: 1.25rem;
+        .card-top h3 {
+          font-size: 1.1rem;
           font-weight: 700;
         }
 
-        .portal-sidebar {
+        .portal-sidebar-modern {
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 30px;
         }
 
-        .help-card {
-          padding: 24px;
+        .support-card-elite {
+          background: linear-gradient(135deg, rgba(0, 86, 255, 0.1), rgba(0, 210, 255, 0.05));
+          border-radius: 24px;
+          padding: 35px;
           text-align: center;
-          background: linear-gradient(135deg, var(--bg-card), rgba(0, 210, 255, 0.05));
+          border: 1px solid rgba(0, 210, 255, 0.1);
+          position: relative;
+          overflow: hidden;
         }
 
-        .help-card h3 {
+        .support-icon {
+          width: 45px;
+          height: 45px;
+          color: var(--primary-glow);
+          margin-bottom: 15px;
+        }
+
+        .support-card-elite h4 {
           margin-bottom: 10px;
-          font-size: 1rem;
+          font-size: 1.1rem;
         }
 
-        .help-card p {
+        .support-card-elite p {
+          font-size: 0.85rem;
           color: var(--text-muted);
-          font-size: 0.8rem;
-          margin-bottom: 20px;
+          margin-bottom: 25px;
+          line-height: 1.6;
         }
 
-        .help-btn {
+        .support-action-btn {
           width: 100%;
-          background: transparent;
+          height: 50px;
+          background: rgba(255, 255, 255, 0.02);
           border: 1px solid var(--primary-glow);
           color: var(--primary-glow);
-          padding: 10px;
-          border-radius: 10px;
+          border-radius: 14px;
+          font-weight: 700;
           cursor: pointer;
-          transition: var(--transition);
-          font-weight: 600;
+          transition: all 0.3s ease;
         }
 
-        .help-btn:hover {
+        .support-action-btn:hover {
           background: var(--primary-glow);
-          color: var(--bg-dark);
+          color: #000;
+          box-shadow: 0 10px 20px rgba(0, 210, 255, 0.2);
         }
 
-        @media (max-width: 1000px) {
+        @keyframes pulse {
+          0% { opacity: 0.4; }
+          50% { opacity: 1; }
+          100% { opacity: 0.4; }
+        }
+
+        @media (max-width: 1100px) {
           .portal-grid { grid-template-columns: 1fr; }
         }
       `}</style>

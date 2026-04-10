@@ -1,5 +1,7 @@
 import React from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Settings, LogOut, Layout, Users, BarChart3, Fingerprint } from 'lucide-react';
 
 const Navbar = ({ user, onLogout }) => {
   const location = useLocation();
@@ -7,213 +9,199 @@ const Navbar = ({ user, onLogout }) => {
   if (!user || location.pathname === '/login') return null;
 
   return (
-    <nav className="navbar-glass">
-      <div className="nav-content">
-        <Link to="/" className="nav-brand">
-          <img src="/logo.png" alt="Creinx" className="nav-logo" />
-          <div className="brand-text">
-            <span className="brand-main">CREINX</span>
-            <span className="brand-sub">ATTENDANCE</span>
+    <motion.nav 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className="orbital-dock"
+    >
+      <div className="dock-content">
+        <Link to="/" className="dock-brand">
+          <div className="dock-logo-box">
+            <img src="/logo.png" alt="Creinx" className="dock-logo" />
+          </div>
+          <div className="brand-hq">
+            <span className="hq-main">CREINX</span>
+            <span className="hq-sub">OS v3.0</span>
           </div>
         </Link>
 
-        <div className="nav-links">
+        <div className="dock-links">
           {user.role === 'admin' ? (
             <>
-              <NavLink to="/admin/dashboards" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                Dashboard
+              <NavLink to="/admin/dashboards" className={({ isActive }) => isActive ? 'dock-item active' : 'dock-item'}>
+                <Layout size={18} />
+                <span>HQ</span>
               </NavLink>
-              <NavLink to="/admin/employees" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                Employees
+              <NavLink to="/admin/employees" className={({ isActive }) => isActive ? 'dock-item active' : 'dock-item'}>
+                <Users size={18} />
+                <span>Sector</span>
               </NavLink>
-              <NavLink to="/admin/reports" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                Reports
+              <NavLink to="/admin/reports" className={({ isActive }) => isActive ? 'dock-item active' : 'dock-item'}>
+                <BarChart3 size={18} />
+                <span>Logs</span>
               </NavLink>
             </>
           ) : (
-            <NavLink to="/employee/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-              My Attendance
+            <NavLink to="/employee/dashboard" className={({ isActive }) => isActive ? 'dock-item active' : 'dock-item'}>
+              <Fingerprint size={18} />
+              <span>Identity</span>
             </NavLink>
           )}
         </div>
 
-        <div className="nav-user">
-          <div className="user-info">
-            <span className="user-name">{user.name}</span>
-            <div className="user-actions">
-               <NavLink to="/change-password" title="Change Password" className="settings-link">
-                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-               </NavLink>
-               <span className="user-role">{user.role}</span>
+        <div className="dock-user-sector">
+          <div className="user-profile-stack">
+            <NavLink to="/change-password" title="Security Settings" className="dock-settings-btn">
+              <motion.div whileHover={{ rotate: 90 }} transition={{ type: 'spring' }}>
+                <Settings size={18} />
+              </motion.div>
+            </NavLink>
+            <div className="user-text-stack">
+              <span className="dock-user-name">{user.name}</span>
+              <span className="dock-user-role">{user.role}</span>
             </div>
           </div>
-          <button onClick={onLogout} className="logout-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-          </button>
+          
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={onLogout} 
+            className="dock-logout-btn"
+          >
+            <LogOut size={18} />
+          </motion.button>
         </div>
       </div>
 
       <style jsx>{`
-        .navbar-glass {
+        .orbital-dock {
           position: sticky;
-          top: 20px;
-          margin: 0 20px;
-          height: 70px;
-          background: rgba(18, 20, 29, 0.7);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          top: 25px;
+          margin: 0 auto;
+          width: calc(100% - 60px);
+          max-width: 1380px;
+          height: 72px;
+          background: rgba(10, 12, 18, 0.7);
+          backdrop-filter: blur(20px) saturate(180%);
           border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 16px;
-          z-index: 1000;
+          border-radius: 22px;
+          z-index: 9999;
           display: flex;
           align-items: center;
-          padding: 0 24px;
+          padding: 0 25px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
-        .nav-content {
+        .dock-content {
           width: 100%;
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
 
-        .nav-brand {
+        .dock-brand {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 15px;
           text-decoration: none;
         }
 
-        .nav-logo {
-          height: 36px;
+        .dock-logo-box {
+          background: rgba(255, 255, 255, 0.02);
+          padding: 8px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .brand-text {
+        .dock-logo { height: 28px; }
+
+        .brand-hq { display: flex; flex-direction: column; }
+        .hq-main { color: white; font-weight: 900; font-size: 1rem; letter-spacing: 1px; }
+        .hq-sub { color: var(--primary-glow); font-size: 0.6rem; font-weight: 800; letter-spacing: 2px; }
+
+        .dock-links {
           display: flex;
-          flex-direction: column;
+          gap: 10px;
+          background: rgba(255, 255, 255, 0.02);
+          padding: 6px;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .brand-main {
-          color: white;
-          font-weight: 800;
-          font-size: 1.1rem;
-          letter-spacing: 1px;
-          line-height: 1;
-        }
-
-        .brand-sub {
-          color: var(--primary-glow);
-          font-size: 0.6rem;
-          font-weight: 600;
-          letter-spacing: 2px;
-        }
-
-        .nav-links {
-          display: flex;
-          gap: 32px;
-        }
-
-        .nav-item {
-          color: var(--text-muted);
-          text-decoration: none;
-          font-size: 0.9rem;
-          font-weight: 500;
-          transition: var(--transition);
-          position: relative;
-          padding: 8px 0;
-        }
-
-        .nav-item:hover {
-          color: white;
-        }
-
-        .nav-item.active {
-          color: white;
-        }
-
-        .nav-item.active::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: 2px;
-          background: var(--primary-glow);
-          box-shadow: 0 0 10px var(--primary-glow);
-        }
-
-        .nav-user {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-
-        .user-actions {
+        .dock-item {
           display: flex;
           align-items: center;
           gap: 10px;
-        }
-
-        .settings-link {
           color: var(--text-muted);
-          display: flex;
-          align-items: center;
-          transition: var(--transition);
-        }
-
-        .settings-link:hover {
-          color: var(--primary-glow);
-          transform: rotate(45deg);
-        }
-
-        .settings-link svg {
-          width: 16px;
-          height: 16px;
-        }
-
-        .user-info {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-        }
-
-        .user-name {
-          color: white;
+          text-decoration: none;
           font-size: 0.85rem;
-          font-weight: 600;
+          font-weight: 700;
+          padding: 10px 18px;
+          border-radius: 12px;
+          transition: all 0.3s ease;
         }
 
-        .user-role {
-          color: var(--text-muted);
-          font-size: 0.7rem;
-          text-transform: capitalize;
+        .dock-item:hover { color: white; background: rgba(255, 255, 255, 0.03); }
+
+        .dock-item.active {
+          color: white;
+          background: rgba(0, 210, 255, 0.1);
+          box-shadow: inset 0 0 15px rgba(0, 210, 255, 0.05);
+          position: relative;
         }
 
-        .logout-btn {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: var(--text-muted);
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
+        .dock-item.active::after {
+          content: '';
+          position: absolute;
+          bottom: 6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 12px;
+          height: 2px;
+          background: var(--primary-glow);
+          border-radius: 2px;
+          box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .dock-user-sector { display: flex; align-items: center; gap: 20px; }
+
+        .user-profile-stack {
           display: flex;
           align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: var(--transition);
+          gap: 15px;
+          background: rgba(255, 255, 255, 0.02);
+          padding: 6px 15px;
+          border-radius: 14px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .logout-btn:hover {
-          background: rgba(239, 68, 68, 0.1);
+        .dock-settings-btn { color: var(--text-muted); transition: 0.3s; padding-top: 4px; }
+        .dock-settings-btn:hover { color: var(--primary-glow); }
+
+        .user-text-stack { display: flex; flex-direction: column; align-items: flex-end; }
+        .dock-user-name { color: white; font-size: 0.8rem; font-weight: 700; }
+        .dock-user-role { color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; font-weight: 800; }
+
+        .dock-logout-btn {
+          background: rgba(239, 68, 68, 0.05);
+          border: 1px solid rgba(239, 68, 68, 0.1);
           color: #ef4444;
-          border-color: rgba(239, 68, 68, 0.2);
+          width: 42px; height: 42px;
+          border-radius: 14px;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
         }
 
-        .logout-btn svg {
-          width: 18px;
+        .dock-logout-btn:hover { background: #ef4444; color: white; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+
+        @media (max-width: 900px) {
+          .dock-item span, .brand-hq, .user-text-stack { display: none; }
+          .dock-links { gap: 5px; }
+          .orbital-dock { padding: 0 15px; }
         }
       `}</style>
-    </nav>
+    </motion.nav>
   );
 };
 
