@@ -11,5 +11,7 @@ router.delete('/employee/:id', authenticateToken, authorizeRole(['admin']), admi
 router.get('/report', authenticateToken, authorizeRole(['admin']), adminController.getAttendanceReport);
 router.get('/analytics', authenticateToken, authorizeRole(['admin']), adminController.getAttendanceAnalytics);
 router.get('/employee/:employeeId', authenticateToken, authorizeRole(['admin']), adminController.getEmployeeAttendance);
+router.get('/employee/:id/full-report', authenticateToken, authorizeRole(['admin']), adminController.getEmployeeFullReport);
+router.post('/leave/:id/review', authenticateToken, authorizeRole(['admin']), adminController.handleLeaveReview);
 
 module.exports = router;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
 import AttendanceAnalytics from '../components/AttendanceAnalytics';
+import AdminStaffPanel from '../components/AdminStaffPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, CheckCircle, Building, Home, Activity, ChevronRight, Calendar } from 'lucide-react';
 
@@ -145,6 +146,17 @@ const Dashboards = () => {
              </div>
            </motion.aside>
          </div>
+
+         {/* ===== TOTAL OVERSIGHT PANEL ===== */}
+         <motion.div
+           initial={{ y: 30, opacity: 0 }}
+           animate={{ y: 0, opacity: 1 }}
+           transition={{ delay: 0.5 }}
+           style={{ marginTop: '30px' }}
+         >
+           <AdminStaffPanel />
+         </motion.div>
+
        </div>
 
        <style jsx>{`

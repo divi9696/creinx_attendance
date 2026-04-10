@@ -198,3 +198,40 @@ exports.deleteEmployee = async (req, res) => {
   }
 };
 
+exports.handleLeaveReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, decline_reason } = req.body;
+    const adminId = req.user.id;
+
+    if (!['approved', 'declined'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    await LeaveRequest.updateStatus(id, status, adminId, decline_reason);
+    res.json({ message: `Leave request ${status} successfully` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getEmployeeFullReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const employee = await Employee.findById(id);
+    if (!employee) return res.status(404).json({ error: 'Employee not found' });
+
+    const logs = await Attendance.getByEmployeeId(id, 1000);
+    const leaves = await LeaveRequest.findByEmployeeId(id);
+
+    res.json({
+      employee,
+      attendance: logs,
+      leaves: leaves
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+

@@ -64,6 +64,44 @@ exports.markAttendance = async (req, res) => {
   }
 };
 
+exports.getTodayStatus = async (req, res) => {
+  try {
+    const employeeId = req.user.id;
+    const now = new Date();
+    const today = now.getFullYear() + '-' + 
+                 String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                 String(now.getDate()).padStart(2, '0');
+    
+    const attendance = await Attendance.getAttendanceByEmployeeAndDate(employeeId, today);
+    res.json({ attendance });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.handleCheckout = async (req, res) => {
+  try {
+    const employeeId = req.user.id;
+    const now = new Date();
+    const localDateTime = now.getFullYear() + '-' + 
+                         String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                         String(now.getDate()).padStart(2, '0') + ' ' + 
+                         String(now.getHours()).padStart(2, '0') + ':' + 
+                         String(now.getMinutes()).padStart(2, '0') + ':' + 
+                         String(now.getSeconds()).padStart(2, '0');
+
+    const success = await Attendance.checkOut(employeeId, localDateTime);
+    
+    if (!success) {
+      return res.status(400).json({ error: 'No active session found to check out from today.' });
+    }
+
+    res.json({ message: 'Departure initialized successfully. Have a great day!', check_out: localDateTime });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getAttendanceHistory = async (req, res) => {
   try {
     const employeeId = req.user.id;

@@ -21,6 +21,19 @@ class Attendance {
     return result.insertId;
   }
 
+  static async checkOut(employeeId, checkOutTime) {
+    const [result] = await db.query(`
+      UPDATE attendance 
+      SET check_out = '${checkOutTime}'
+      WHERE employee_id = ${parseInt(employeeId)} 
+      AND DATE(check_in) = DATE('${checkOutTime}')
+      AND check_out IS NULL
+      ORDER BY check_in DESC
+      LIMIT 1
+    `);
+    return result.affectedRows > 0;
+  }
+
   static async markAttendanceWithType(attendanceData) {
     return this.markAttendance(attendanceData);
   }
