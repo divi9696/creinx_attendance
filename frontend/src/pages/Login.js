@@ -93,18 +93,6 @@ const Login = ({ onLoginSuccess }) => {
               <div className="btn-overlay"></div>
             </button>
           </form>
-
-          <div className="status-layers">
-            <div className="status-item">
-              <span className="status-dot green"></span>
-              <span>NETWORK STABLE</span>
-            </div>
-            <div className="status-spacer"></div>
-            <div className="status-item">
-              <span className="status-dot pulse"></span>
-              <span>SECURE V2</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
