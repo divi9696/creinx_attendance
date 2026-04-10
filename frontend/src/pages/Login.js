@@ -40,9 +40,11 @@ const Login = ({ onLoginSuccess }) => {
   return (
     <div className="login-page">
       <div className="vibrant-bg">
-        <div className="floating-shape shape-1"></div>
-        <div className="floating-shape shape-2"></div>
-        <div className="floating-glow glow-1"></div>
+        <div className="floating-blob blob-1"></div>
+        <div className="floating-blob blob-2"></div>
+        <div className="floating-blob blob-3"></div>
+        <div className="floating-blob blob-4"></div>
+        <div className="glass-grain"></div>
       </div>
       
       <div className="login-container animate-fade-in">
