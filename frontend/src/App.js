@@ -10,13 +10,33 @@ import Reports from './pages/Reports';
 import './styles/App.css';
 
 function AppContent({ user, loading, onLoginSuccess, onPasswordChanged, onLogout }) {
+  const [showSplash, setShowSplash] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showSplash) {
+    return (
+      <div className="splash-screen">
+        <div className="splash-content">
+          <img src="/logo.png" alt="Creinx" className="splash-logo" />
+          <div className="splash-loader">
+            <div className="loader-bar"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // If user needs to change password on first login, show the change password modal
   if (user && user.first_login) {
     return <ChangePassword user={user} onPasswordChanged={onPasswordChanged} />;
   }
 
   if (loading) {
-    return <div className="app-loading">Loading...</div>;
+    return <div className="app-loading">Initializing System...</div>;
   }
 
   return (

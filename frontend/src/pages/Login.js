@@ -25,14 +25,13 @@ const Login = ({ onLoginSuccess }) => {
       
       onLoginSuccess(user);
       
-      // Automatic Redirection based on role
       if (user.role === 'admin') {
         navigate('/admin/dashboards');
       } else {
         navigate('/employee/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.error || 'Authentication failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -40,58 +39,78 @@ const Login = ({ onLoginSuccess }) => {
 
   return (
     <div className="login-page">
-      <div className="login-background">
-        <div className="circle circle-1"></div>
-        <div className="circle circle-2"></div>
+      {/* Movable Elements (Background) */}
+      <div className="vibrant-bg">
+        <div className="floating-shape shape-1"></div>
+        <div className="floating-shape shape-2"></div>
+        <div className="floating-shape shape-3"></div>
+        <div className="floating-glow glow-1"></div>
+        <div className="floating-glow glow-2"></div>
       </div>
       
       <div className="login-container animate-fade-in">
         <div className="glass-panel login-card">
           <div className="login-header">
-            <img src="/logo.png" alt="Creinx Logo" className="login-logo" />
-            <h1 className="brand-fonts">Welcome Back</h1>
-            <p className="subtitle">Creinx Attendance System</p>
+            <div className="logo-badge">
+              <img src="/logo.png" alt="Creinx" className="login-logo" />
+            </div>
+            <h1 className="brand-fonts">Enterprise Access</h1>
+            <div className="security-status">
+               <span className="dot"></span> SECURE SESSION
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                className="glass-input"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@company.com"
-                required
-              />
+              <label htmlFor="email">Work Email</label>
+              <div className="input-with-icon">
+                <span className="input-icon">👤</span>
+                <input
+                  type="email"
+                  id="email"
+                  className="glass-input"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@creinx.com"
+                  required
+                />
+              </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                className="glass-input"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
+              <label htmlFor="password">Security Credential</label>
+              <div className="input-with-icon">
+                <span className="input-icon">🔒</span>
+                <input
+                  type="password"
+                  id="password"
+                  className="glass-input"
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
             </div>
 
-            {error && <div className="error-badge">{error}</div>}
+            {error && (
+              <div className="error-alert">
+                <span className="error-icon">⚠️</span>
+                {error}
+              </div>
+            )}
 
-            <button type="submit" className="btn-primary login-btn" disabled={loading}>
-              {loading ? <span className="spinner"></span> : 'Authenticate'}
+            <button type="submit" className="login-btn-premium" disabled={loading}>
+              <div className="btn-shine"></div>
+              {loading ? <span className="spinner"></span> : 'INITIALIZE LOGIN'}
             </button>
           </form>
 
-          <div className="login-display">
-            <p className="demo-hint">Demo: admin@company.com / admin123</p>
-          </div>
+          <footer className="login-footer-clean">
+            <p>© 2024 Creinx International. All rights reserved.</p>
+          </footer>
         </div>
       </div>
     </div>
