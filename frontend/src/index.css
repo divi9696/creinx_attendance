@@ -1,28 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Ultra-Premium Color Palette */
   --primary-glow: #00d2ff;
   --primary-deep: #0056ff;
-  --accent-cyan: #00f2fe;
-  --accent-blue: #4facfe;
-  
   --bg-dark: #06070a;
-  --bg-card: rgba(13, 15, 22, 0.9);
-  --bg-layer-2: rgba(255, 255, 255, 0.03);
+  --bg-card: rgba(10, 12, 18, 0.95);
   
-  --text-main: #f8fafc;
+  --text-main: #ffffff;
   --text-muted: #94a3b8;
-  --text-dim: #64748b;
   
-  /* Layered Shadow System */
-  --shadow-l1: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-l2: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-l3: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-premium: 0 0 40px rgba(0, 210, 255, 0.07);
-  
-  --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  --radius-xl: 24px;
+  --shadow-premium: 0 0 50px rgba(0, 210, 255, 0.1);
+  --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -32,56 +20,27 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Outfit', sans-serif;
   background-color: var(--bg-dark);
   color: var(--text-main);
-  min-height: 100vh;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  letter-spacing: -0.01em;
 }
 
 h1, h2, h3, .brand-fonts {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
 }
 
-/* Layered Card System */
-.layer-card {
-  background: var(--bg-card);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-l3), var(--shadow-premium);
-  position: relative;
-  overflow: hidden;
-  transition: var(--transition-smooth);
+/* Centralized Utility */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.layer-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary-glow), var(--primary-deep));
-  opacity: 0.8;
-}
-
-/* Glass Inputs with Layers */
 .glass-input {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  padding: 14px 18px;
-  border-radius: 14px;
-  font-family: 'Inter', sans-serif;
-  transition: var(--transition-smooth);
-}
-
-.glass-input:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--primary-glow);
-  box-shadow: 0 0 15px rgba(0, 210, 255, 0.15);
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.5px;
 }
