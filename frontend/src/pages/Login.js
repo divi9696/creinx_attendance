@@ -67,7 +67,7 @@ const Login = ({ onLoginSuccess }) => {
                   className="glass-input"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@creinx.com"
+                  placeholder="ENTER THE ID"
                   required
                 />
               </div>
@@ -82,7 +82,7 @@ const Login = ({ onLoginSuccess }) => {
                   className="glass-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="ENTER PASSWORD"
                   required
                 />
               </div>
