@@ -8,7 +8,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request Logger
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  res.on('finish', () => {
+    console.log(`${req.method} ${req.url} ${res.statusCode}`);
+  });
   next();
 });
 

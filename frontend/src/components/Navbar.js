@@ -1,131 +1,190 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 
 const Navbar = ({ user, onLogout }) => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('profilePhoto') || null);
-  const dropdownRef = useRef(null);
-  const fileInputRef = useRef(null);
 
-  const handleLogout = () => {
-    onLogout();
-    navigate('/login');
-    setShowDropdown(false);
-  };
-
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const photoData = event.target.result;
-        setProfilePhoto(photoData);
-        localStorage.setItem('profilePhoto', photoData);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
-    };
-
-    if (showDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showDropdown]);
-
-  const isActive = (path) => {
-    return location.pathname === path ? 'active' : '';
-  };
+  if (!user || location.pathname === '/login') return null;
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
-          📋 Attendance System
+    <nav className="navbar-glass">
+      <div className="nav-content">
+        <Link to="/" className="nav-brand">
+          <img src="/logo.png" alt="Creinx" className="nav-logo" />
+          <div className="brand-text">
+            <span className="brand-main">CREINX</span>
+            <span className="brand-sub">ATTENDANCE</span>
+          </div>
         </Link>
-        <div className="nav-menu">
-          {user ? (
-            <>
-              <div className="nav-links">
-                {user.role === 'admin' ? (
-                  <>
-                    <Link to="/admin/dashboards" className={`nav-link ${isActive('/admin/dashboards')}`}>Dashboards</Link>
-                    <Link to="/admin/employees" className={`nav-link ${isActive('/admin/employees')}`}>Employees</Link>
-                    <Link to="/admin/reports" className={`nav-link ${isActive('/admin/reports')}`}>Reports</Link>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/employee/dashboard" className={`nav-link ${isActive('/employee/dashboard')}`}>Dashboard</Link>
-                    <Link to="/employee/dashboard" className={`nav-link ${isActive('/employee/dashboard')}`}>My Leaves</Link>
-                    <Link to="/employee/dashboard" className={`nav-link ${isActive('/employee/dashboard')}`}>History</Link>
-                  </>
-                )}
-              </div>
 
-              <div className="profile-dropdown" ref={dropdownRef}>
-                <button 
-                  className="profile-icon-btn" 
-                  onClick={() => setShowDropdown(!showDropdown)}
-                  title="Profile Menu"
-                >
-                  👤
-                </button>
-                {showDropdown && (
-                  <div className="dropdown-menu">
-                    <div className="dropdown-profile-section">
-                      <div className="profile-avatar-container">
-                        <div 
-                          className="profile-avatar"
-                          onClick={triggerFileInput}
-                          style={{backgroundImage: profilePhoto ? `url(${profilePhoto})` : 'none'}}
-                        >
-                          {!profilePhoto && <span className="avatar-placeholder">📷</span>}
-                        </div>
-                        <input 
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handlePhotoUpload}
-                          accept="image/*"
-                          style={{display: 'none'}}
-                        />
-                      </div>
-                      <div className="profile-info">
-                        <div className="profile-username">{user.name}</div>
-                        <div className="profile-role">{user.role.toUpperCase()}</div>
-                      </div>
-                    </div>
-                    <hr className="dropdown-divider" />
-                    <button 
-                      onClick={handleLogout} 
-                      className="logout-btn-dropdown"
-                    >
-                      🚪 Logout
-                    </button>
-                  </div>
-                )}
-              </div>
+        <div className="nav-links">
+          {user.role === 'admin' ? (
+            <>
+              <NavLink to="/admin/dashboards" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                Dashboard
+              </NavLink>
+              <NavLink to="/admin/employees" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                Employees
+              </NavLink>
+              <NavLink to="/admin/reports" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                Reports
+              </NavLink>
             </>
           ) : (
-            <Link to="/login" className="nav-link">Login</Link>
+            <NavLink to="/employee/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+              My Attendance
+            </NavLink>
           )}
         </div>
+
+        <div className="nav-user">
+          <div className="user-info">
+            <span className="user-name">{user.name}</span>
+            <span className="user-role">{user.role}</span>
+          </div>
+          <button onClick={onLogout} className="logout-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          </button>
+        </div>
       </div>
+
+      <style jsx>{`
+        .navbar-glass {
+          position: sticky;
+          top: 20px;
+          margin: 0 20px;
+          height: 70px;
+          background: rgba(18, 20, 29, 0.7);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 16px;
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          padding: 0 24px;
+        }
+
+        .nav-content {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .nav-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-decoration: none;
+        }
+
+        .nav-logo {
+          height: 36px;
+        }
+
+        .brand-text {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .brand-main {
+          color: white;
+          font-weight: 800;
+          font-size: 1.1rem;
+          letter-spacing: 1px;
+          line-height: 1;
+        }
+
+        .brand-sub {
+          color: var(--primary-glow);
+          font-size: 0.6rem;
+          font-weight: 600;
+          letter-spacing: 2px;
+        }
+
+        .nav-links {
+          display: flex;
+          gap: 32px;
+        }
+
+        .nav-item {
+          color: var(--text-muted);
+          text-decoration: none;
+          font-size: 0.9rem;
+          font-weight: 500;
+          transition: var(--transition);
+          position: relative;
+          padding: 8px 0;
+        }
+
+        .nav-item:hover {
+          color: white;
+        }
+
+        .nav-item.active {
+          color: white;
+        }
+
+        .nav-item.active::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background: var(--primary-glow);
+          box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .nav-user {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .user-info {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        }
+
+        .user-name {
+          color: white;
+          font-size: 0.85rem;
+          font-weight: 600;
+        }
+
+        .user-role {
+          color: var(--text-muted);
+          font-size: 0.7rem;
+          text-transform: capitalize;
+        }
+
+        .logout-btn {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: var(--text-muted);
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .logout-btn svg {
+          width: 18px;
+        }
+      `}</style>
     </nav>
   );
 };
