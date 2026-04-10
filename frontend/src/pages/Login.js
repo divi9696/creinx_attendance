@@ -31,7 +31,7 @@ const Login = ({ onLoginSuccess }) => {
         navigate('/employee/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Authentication failed. Please check your credentials.');
+      setError(err.response?.data?.error || 'Authentication denied. Check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -39,54 +39,47 @@ const Login = ({ onLoginSuccess }) => {
 
   return (
     <div className="login-page">
-      {/* Movable Elements (Background) */}
       <div className="vibrant-bg">
         <div className="floating-shape shape-1"></div>
         <div className="floating-shape shape-2"></div>
-        <div className="floating-shape shape-3"></div>
         <div className="floating-glow glow-1"></div>
-        <div className="floating-glow glow-2"></div>
       </div>
       
       <div className="login-container animate-fade-in">
-        <div className="glass-panel login-card">
-          <div className="login-header">
-            <div className="logo-badge">
-              <img src="/logo.png" alt="Creinx" className="login-logo" />
+        <div className="layer-card login-card">
+          <header className="login-card-header">
+            <div className="logo-wrapper">
+              <img src="/logo.png" alt="Creinx" className="login-logo-refined" />
             </div>
-            <h1 className="brand-fonts">Enterprise Access</h1>
-            <div className="security-status">
-               <span className="dot"></span> SECURE SESSION
+            <div className="header-titles">
+               <h1 className="brand-fonts">System Access</h1>
+               <p className="login-meta">AUTHENTICATION GATEWAY</p>
             </div>
-          </div>
+          </header>
 
-          <form onSubmit={handleSubmit} className="login-form">
-            <div className="form-group">
-              <label htmlFor="email">Work Email</label>
-              <div className="input-with-icon">
-                <span className="input-icon">👤</span>
+          <form onSubmit={handleSubmit} className="login-form-layered">
+            <div className="input-layer">
+              <label>Work Identity</label>
+              <div className="field-group">
+                <span className="field-icon">📧</span>
                 <input
                   type="email"
-                  id="email"
                   className="glass-input"
-                  name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@creinx.com"
+                  placeholder="admin@creinx.com"
                   required
                 />
               </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Security Credential</label>
-              <div className="input-with-icon">
-                <span className="input-icon">🔒</span>
+            <div className="input-layer">
+              <label>Security Key</label>
+              <div className="field-group">
+                <span className="field-icon">🔑</span>
                 <input
                   type="password"
-                  id="password"
                   className="glass-input"
-                  name="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -95,22 +88,25 @@ const Login = ({ onLoginSuccess }) => {
               </div>
             </div>
 
-            {error && (
-              <div className="error-alert">
-                <span className="error-icon">⚠️</span>
-                {error}
-              </div>
-            )}
+            {error && <div className="error-layer">{error}</div>}
 
-            <button type="submit" className="login-btn-premium" disabled={loading}>
-              <div className="btn-shine"></div>
-              {loading ? <span className="spinner"></span> : 'INITIALIZE LOGIN'}
+            <button type="submit" className="login-btn-elite" disabled={loading}>
+              {loading ? <span className="spinner"></span> : 'INITIALIZE SESSION'}
+              <div className="btn-overlay"></div>
             </button>
           </form>
 
-          <footer className="login-footer-clean">
-            <p>© 2024 Creinx International. All rights reserved.</p>
-          </footer>
+          <div className="status-layers">
+            <div className="status-item">
+              <span className="status-dot green"></span>
+              <span>NETWORK STABLE</span>
+            </div>
+            <div className="status-spacer"></div>
+            <div className="status-item">
+              <span className="status-dot pulse"></span>
+              <span>ENCRYPTED V2</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
