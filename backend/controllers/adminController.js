@@ -181,9 +181,15 @@ exports.deleteEmployee = async (req, res) => {
       return res.status(404).json({ error: 'Employee not found' });
     }
 
-    await Employee.delete(id);
+    const result = await Employee.delete(id);
+    if (!result) {
+        console.error(`Deleting employee ${id} failed in database`);
+        return res.status(500).json({ error: 'Deletion failed in database' });
+    }
+    console.log(`Successfully deleted employee ${id}`);
     res.json({ message: 'Employee deleted successfully' });
   } catch (error) {
+    console.error('Error deleting employee:', error.message);
     res.status(500).json({ error: error.message });
   }
 };

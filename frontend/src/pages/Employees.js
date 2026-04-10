@@ -106,7 +106,7 @@ const Employees = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5001/api/admin/employee/${id}`, {
+      await axios.delete(`${API_URL}/admin/employee/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSubmitSuccess('Employee deleted successfully!');

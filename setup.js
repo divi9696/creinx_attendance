@@ -19,7 +19,7 @@ const setupDatabase = async () => {
 
     console.log('✓ Connected to MySQL Cloud');
 
-    // Create employees table
+    // Create/Update employees table
     await connection.query(`
       CREATE TABLE IF NOT EXISTS employees (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -28,13 +28,22 @@ const setupDatabase = async () => {
         password VARCHAR(255) NOT NULL,
         role ENUM('admin', 'employee') DEFAULT 'employee',
         department VARCHAR(100),
+        job_role VARCHAR(100),
+        date_of_join DATE,
+        first_login TINYINT(1) DEFAULT 1,
         office_lat DECIMAL(10, 8),
         office_lon DECIMAL(11, 8),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
-    console.log('✓ Employees table created/verified');
+
+    // Ensure missing columns exist (for existing databases)
+    try { await connection.query('ALTER TABLE employees ADD COLUMN job_role VARCHAR(100) AFTER department'); } catch (e) {}
+    try { await connection.query('ALTER TABLE employees ADD COLUMN date_of_join DATE AFTER job_role'); } catch (e) {}
+    try { await connection.query('ALTER TABLE employees ADD COLUMN first_login TINYINT(1) DEFAULT 1 AFTER date_of_join'); } catch (e) {}
+    
+    console.log('✓ Employees table updated with all missing columns');
 
     // Create leave_requests table
     await connection.query(`
@@ -51,8 +60,8 @@ const setupDatabase = async () => {
         reviewed_at TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (employee_id) REFERENCES employees(id),
-        FOREIGN KEY (reviewed_by) REFERENCES employees(id),
+        FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+        FOREIGN KEY (reviewed_by) REFERENCES employees(id) ON DELETE SET NULL,
         INDEX idx_employee_id (employee_id),
         INDEX idx_status (status),
         INDEX idx_start_date (start_date)
@@ -74,8 +83,8 @@ const setupDatabase = async () => {
         attendance_type ENUM('work_office', 'work_home', 'leave') DEFAULT 'work_office',
         leave_request_id INT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (employee_id) REFERENCES employees(id),
-        FOREIGN KEY (leave_request_id) REFERENCES leave_requests(id),
+        FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+        FOREIGN KEY (leave_request_id) REFERENCES leave_requests(id) ON DELETE SET NULL,
         INDEX idx_employee_id (employee_id),
         INDEX idx_check_in (check_in),
         INDEX idx_attendance_type (attendance_type)
