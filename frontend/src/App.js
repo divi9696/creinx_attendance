@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import AppLayout from './components/AppLayout';
 import ChangePassword from './components/ChangePassword';
 import Login from './pages/Login';
 import EmployeeDashboard from './pages/EmployeeDashboard';
@@ -30,7 +30,6 @@ function AppContent({ user, loading, onLoginSuccess, onPasswordChanged, onLogout
     );
   }
 
-  // If user needs to change password on first login, show the change password modal
   if (user && user.first_login) {
     return <ChangePassword user={user} onPasswordChanged={onPasswordChanged} />;
   }
@@ -39,34 +38,53 @@ function AppContent({ user, loading, onLoginSuccess, onPasswordChanged, onLogout
     return <div className="app-loading">Initializing System...</div>;
   }
 
-  return (
-    <>
-      <Navbar user={user} onLogout={onLogout} />
+  // ─── Login page: no sidebar ───
+  const isLoginRoute = !user;
+  if (isLoginRoute) {
+    return (
       <Routes>
         <Route path="/login" element={<Login onLoginSuccess={onLoginSuccess} />} />
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    );
+  }
+
+  // ─── Authenticated: Sidebar Layout ───
+  return (
+    <AppLayout user={user} onLogout={onLogout}>
+      <Routes>
+        {/* Admin Routes */}
         <Route
           path="/admin/dashboards"
-          element={user?.role === 'admin' ? <Dashboards /> : <Navigate to="/login" />}
+          element={user.role === 'admin' ? <Dashboards /> : <Navigate to="/login" />}
         />
         <Route
           path="/admin/employees"
-          element={user?.role === 'admin' ? <Employees /> : <Navigate to="/login" />}
+          element={user.role === 'admin' ? <Employees /> : <Navigate to="/login" />}
         />
         <Route
           path="/admin/reports"
-          element={user?.role === 'admin' ? <Reports /> : <Navigate to="/login" />}
+          element={user.role === 'admin' ? <Reports /> : <Navigate to="/login" />}
         />
+
+        {/* Employee Routes */}
         <Route
           path="/employee/dashboard"
-          element={user?.role === 'employee' ? <EmployeeDashboard /> : <Navigate to="/login" />}
+          element={user.role === 'employee' ? <EmployeeDashboard /> : <Navigate to="/login" />}
         />
+
+        {/* Shared */}
         <Route
           path="/change-password"
-          element={user ? <ChangePassword user={user} onPasswordChanged={onPasswordChanged} isManual={true} /> : <Navigate to="/login" />}
+          element={<ChangePassword user={user} onPasswordChanged={onPasswordChanged} isManual={true} />}
         />
-        <Route path="/" element={user ? <Navigate to={user.role === 'admin' ? '/admin/dashboards' : '/employee/dashboard'} /> : <Navigate to="/login" />} />
+        <Route
+          path="/"
+          element={<Navigate to={user.role === 'admin' ? '/admin/dashboards' : '/employee/dashboard'} />}
+        />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </>
+    </AppLayout>
   );
 }
 
@@ -75,28 +93,17 @@ function App() {
   const [loading, setLoading] = React.useState(true);
 
   useEffect(() => {
-    // Load user from localStorage on mount
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error('Failed to parse stored user:', err);
-        localStorage.removeItem('user');
-      }
+      try { setUser(JSON.parse(storedUser)); }
+      catch { localStorage.removeItem('user'); }
     }
     setLoading(false);
   }, []);
 
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-  };
+  const handleLoginSuccess = (userData) => setUser(userData);
 
-  const handlePasswordChanged = () => {
-    // Update user state to remove first_login flag
-    const updatedUser = { ...user, first_login: 0 };
-    setUser(updatedUser);
-  };
+  const handlePasswordChanged = () => setUser(prev => ({ ...prev, first_login: 0 }));
 
   const handleLogout = () => {
     setUser(null);
@@ -106,9 +113,9 @@ function App() {
 
   return (
     <Router>
-      <AppContent 
-        user={user} 
-        loading={loading} 
+      <AppContent
+        user={user}
+        loading={loading}
         onLoginSuccess={handleLoginSuccess}
         onPasswordChanged={handlePasswordChanged}
         onLogout={handleLogout}

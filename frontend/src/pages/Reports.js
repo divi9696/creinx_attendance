@@ -1,258 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import AttendanceReport from '../components/AttendanceReport';
 import AttendanceAnalytics from '../components/AttendanceAnalytics';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Activity, Download, RefreshCcw, Database } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { FileText, Activity, RefreshCcw, Download } from 'lucide-react';
 
 const Reports = () => {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    setRefreshKey(prev => prev + 1);
-  }, []);
+  useEffect(() => { setRefreshKey(prev => prev + 1); }, []);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { staggerChildren: 0.15 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setRefreshKey(k => k + 1);
+    setTimeout(() => setRefreshing(false), 1000);
   };
 
   return (
-    <div className="hq-universe">
-      {/* Background Ambience */}
-      <div className="hq-ambience">
-        <div className="h-blob hb-top"></div>
-        <div className="h-blob hb-bottom"></div>
-      </div>
+    <div className="rpt-page">
+      {/* ─── Header ─── */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rpt-header">
+        <div>
+          <h1 className="rpt-title">Archive & Logs</h1>
+          <p className="rpt-sub">Attendance analytics, filtered logs, and statistical distribution</p>
+        </div>
+        <div className="rpt-actions">
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => window.print()} className="rpt-btn secondary">
+            <Download size={16} /><span>Export PDF</span>
+          </motion.button>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleRefresh} className="rpt-btn primary">
+            <RefreshCcw size={16} className={refreshing ? 'spin' : ''} /><span>Sync Data</span>
+          </motion.button>
+        </div>
+      </motion.div>
 
-      <div className="reports-page">
-        <motion.header 
-          initial={{ y: -30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="hq-glass-header"
-        >
-          <div className="hq-header-info">
-            <h1 className="brand-fonts">Intelligence Archive</h1>
-            <p className="hq-sub-label">SIGNAL ANALYSIS & METRIC LOGS</p>
-          </div>
-          <div className="hq-header-actions">
-             <motion.button 
-               whileHover={{ scale: 1.05 }}
-               whileTap={{ scale: 0.95 }}
-               onClick={() => window.print()} 
-               className="action-pill-secondary"
-             >
-               <Download size={16} />
-               <span>Export Archive</span>
-             </motion.button>
-             <motion.button 
-               whileHover={{ scale: 1.05 }}
-               whileTap={{ scale: 0.95 }}
-               onClick={() => setRefreshKey(k => k + 1)} 
-               className="action-pill-primary"
-             >
-               <RefreshCcw size={16} className={refreshKey > 1 ? 'sync-spin' : ''} />
-               <span>Re-index Logs</span>
-             </motion.button>
-          </div>
-        </motion.header>
+      {/* ─── Analytics Chart ─── */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rpt-card">
+        <div className="rpt-card-header">
+          <div className="rpt-card-title"><Activity size={18} /><h3>Statistical Distribution</h3></div>
+          <div className="rpt-live-dot"></div>
+        </div>
+        <AttendanceAnalytics key={refreshKey} />
+      </motion.div>
 
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="reports-grid-elite"
-        >
-          <motion.div variants={itemVariants} className="layer-card diagnostic-box">
-            <div className="box-header-elite">
-              <div className="icon-pod"><Activity size={20} /></div>
-              <h3>Statistical Distribution</h3>
-              <div className="status-dot-pulse"></div>
-            </div>
-            <div className="box-content-padded">
-              <AttendanceAnalytics key={refreshKey} />
-            </div>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="layer-card log-archive-box">
-            <div className="box-header-elite">
-              <div className="icon-pod"><FileText size={20} /></div>
-              <h3>Filtered Personnel Logs</h3>
-              <div className="record-count-badge">
-                <Database size={12} />
-                SECURE STORAGE
-              </div>
-            </div>
-            <div className="box-content-padded">
-              <AttendanceReport />
-            </div>
-          </motion.div>
-        </motion.div>
-      </div>
+      {/* ─── Detailed Logs ─── */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="rpt-card">
+        <div className="rpt-card-header">
+          <div className="rpt-card-title"><FileText size={18} /><h3>Personnel Attendance Logs</h3></div>
+        </div>
+        <AttendanceReport />
+      </motion.div>
 
       <style jsx>{`
-        .hq-universe {
-          min-height: 100vh;
-          background: #06070a;
-          position: relative;
-          padding: 40px 30px;
-          overflow-x: hidden;
-        }
+        .rpt-page { width: 100%; display: flex; flex-direction: column; gap: 28px; }
 
-        .hq-ambience {
-          position: fixed;
-          top: 0; left: 0; width: 100%; height: 100%;
-          pointer-events: none;
-          z-index: 0;
-        }
+        .rpt-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+        .rpt-title { font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 4px; }
+        .rpt-sub { font-size: 0.82rem; color: rgba(255,255,255,0.35); font-weight: 500; }
 
-        .h-blob {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(120px);
-          opacity: 0.04;
+        .rpt-actions { display: flex; gap: 12px; }
+        .rpt-btn {
+          display: flex; align-items: center; gap: 8px;
+          padding: 10px 20px; border-radius: 12px;
+          font-size: 0.82rem; font-weight: 700;
+          cursor: pointer; transition: 0.2s; border: 1px solid transparent;
         }
-        .hb-top { width: 800px; height: 800px; background: #0056ff; top: -10%; left: -10%; }
-        .hb-bottom { width: 600px; height: 600px; background: #00d2ff; bottom: -10%; right: -10%; }
+        .rpt-btn.primary { background: #4deaff; color: #000; }
+        .rpt-btn.primary:hover { background: #00d2ff; box-shadow: 0 8px 20px rgba(0,210,255,0.25); }
+        .rpt-btn.secondary { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: #fff; }
+        .rpt-btn.secondary:hover { background: rgba(255,255,255,0.08); }
 
-        .reports-page {
-          max-width: 1440px;
-          margin: 0 auto;
-          position: relative;
-          z-index: 10;
-        }
+        .rpt-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 28px; }
 
-        .hq-glass-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: rgba(13, 15, 22, 0.4);
-          backdrop-filter: blur(20px);
-          padding: 30px 40px;
-          border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          margin-bottom: 40px;
-        }
+        .rpt-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .rpt-card-title { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.5); }
+        .rpt-card-title h3 { font-size: 1rem; font-weight: 800; color: #fff; }
 
-        .hq-sub-label {
-          font-size: 0.65rem;
-          color: var(--primary-glow);
-          letter-spacing: 4px;
-          font-weight: 800;
-          margin-top: 5px;
-        }
+        .rpt-live-dot { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; animation: pulse 2s infinite; }
 
-        .hq-header-actions {
-          display: flex;
-          gap: 15px;
-        }
-
-        .action-pill-primary, .action-pill-secondary {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 12px 24px;
-          border-radius: 14px;
-          font-size: 0.85rem;
-          font-weight: 800;
-          cursor: pointer;
-          transition: 0.3s;
-          border: 1px solid transparent;
-        }
-
-        .action-pill-primary {
-          background: var(--primary-glow);
-          color: #000;
-        }
-
-        .action-pill-secondary {
-          background: rgba(255, 255, 255, 0.03);
-          border-color: rgba(255, 255, 255, 0.05);
-          color: #fff;
-        }
-
-        .action-pill-secondary:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: var(--primary-glow);
-          color: var(--primary-glow);
-        }
-
-        .reports-grid-elite {
-          display: flex;
-          flex-direction: column;
-          gap: 30px;
-        }
-
-        .box-header-elite {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          padding: 25px 30px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .icon-pod {
-          width: 44px;
-          height: 44px;
-          background: rgba(0, 210, 255, 0.05);
-          border-radius: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--primary-glow);
-        }
-
-        .box-header-elite h3 {
-          font-size: 1.1rem;
-          font-weight: 700;
-          flex: 1;
-        }
-
-        .status-dot-pulse {
-          width: 10px;
-          height: 10px;
-          background: #22c55e;
-          border-radius: 50%;
-          box-shadow: 0 0 10px #22c55e;
-        }
-
-        .record-count-badge {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(255, 255, 255, 0.03);
-          padding: 6px 14px;
-          border-radius: 30px;
-          font-size: 0.65rem;
-          font-weight: 800;
-          color: var(--text-muted);
-          letter-spacing: 1px;
-        }
-
-        .box-content-padded {
-          padding: 30px;
-        }
-
-        .sync-spin {
-          animation: spin 1s infinite linear;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
+        .spin { animation: spin 1s infinite linear; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
 
         @media print {
-          .hq-glass-header, .hq-ambience { display: none; }
-          .hq-universe { background: white; padding: 0; }
-          .layer-card { border: none; box-shadow: none; color: black; background: white; }
-          h3 { color: black; }
+          .rpt-header, .rpt-actions { display: none; }
+          .rpt-card { border: none; padding: 0; }
         }
       `}</style>
     </div>

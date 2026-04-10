@@ -3,16 +3,15 @@ import axios from 'axios';
 import API_URL from '../apiConfig';
 import AttendanceAnalytics from '../components/AttendanceAnalytics';
 import AdminStaffPanel from '../components/AdminStaffPanel';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Users, CheckCircle, Building, Home, Activity, ChevronRight, Calendar } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Users, CheckCircle2, Building2, Home, Activity, RefreshCcw } from 'lucide-react';
 
 const Dashboards = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  useEffect(() => { fetchDashboardData(); }, []);
 
   const fetchDashboardData = async () => {
     try {
@@ -25,302 +24,205 @@ const Dashboards = () => {
       console.error('Failed to fetch dashboard data', err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="hq-loading">
-        <div className="hq-spinner"></div>
-        <span>Initializing HQ...</span>
-      </div>
-    );
-  }
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchDashboardData();
+  };
+
+  if (loading) return (
+    <div className="adm-loading">
+      <div className="adm-spinner"></div>
+      <span>Fetching Intelligence...</span>
+    </div>
+  );
 
   const stats = [
-    { label: 'Total Staff', value: data?.stats?.totalEmployees || 0, icon: <Users size={20} />, color: 'blue' },
-    { label: 'Present Today', value: data?.stats?.presentToday || 0, icon: <CheckCircle size={20} />, color: 'emerald' },
-    { label: 'Office Sector', value: data?.stats?.officeToday || 0, icon: <Building size={20} />, color: 'purple' },
-    { label: 'Remote Ops', value: data?.stats?.homeToday || 0, icon: <Home size={20} />, color: 'cyan' },
+    {
+      label: 'Total Staff', value: data?.stats?.totalEmployees || 0,
+      icon: <Users size={22} />, color: '#4deaff', bg: 'rgba(0,210,255,0.08)', border: 'rgba(0,210,255,0.15)'
+    },
+    {
+      label: 'Present Today', value: data?.stats?.presentToday || 0,
+      icon: <CheckCircle2 size={22} />, color: '#22c55e', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.15)'
+    },
+    {
+      label: 'Office Sector', value: data?.stats?.officeToday || 0,
+      icon: <Building2 size={22} />, color: '#a855f7', bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.15)'
+    },
+    {
+      label: 'Working Remote', value: data?.stats?.homeToday || 0,
+      icon: <Home size={22} />, color: '#fb923c', bg: 'rgba(251,146,60,0.08)', border: 'rgba(251,146,60,0.15)'
+    },
   ];
 
   return (
-    <div className="hq-universe">
-       <div className="hq-ambience">
-         <div className="h-blob hb1"></div>
-         <div className="h-blob hb2"></div>
-       </div>
+    <div className="adm-page">
 
-       <div className="hq-content">
-         <motion.header 
-          initial={{ y: -30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="hq-header"
-         >
-           <div className="hq-id">
-             <h1 className="brand-fonts">Intelligence Hub</h1>
-             <p className="hq-sub">EXECUTIVE OVERVIEW & LOGISTICS</p>
-           </div>
-           
-           <div className="hq-calendar">
-              <Calendar size={16} />
-              <span>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-           </div>
-         </motion.header>
+      {/* ─── Header ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="adm-header"
+      >
+        <div>
+          <h1 className="adm-title">Intelligence Hub</h1>
+          <p className="adm-sub">
+            {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+          onClick={handleRefresh}
+          className="adm-refresh-btn"
+        >
+          <RefreshCcw size={16} className={refreshing ? 'spin' : ''} />
+          <span>Sync</span>
+        </motion.button>
+      </motion.div>
 
-         <motion.section 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ staggerChildren: 0.1 }}
-          className="hq-stats-grid"
-         >
-           {stats.map((stat, idx) => (
-             <motion.div 
-               key={idx}
-               whileHover={{ y: -5, scale: 1.02 }}
-               className={`layer-card hq-stat-card ${stat.color}-theme`}
-             >
-               <div className="stat-visual">
-                 <div className="stat-icon-wrap">{stat.icon}</div>
-               </div>
-               <div className="stat-data">
-                 <div className="stat-val-row">
-                   <span className="stat-n">{stat.value}</span>
-                   <span className="trend-up">+0%</span>
-                 </div>
-                 <span className="stat-title">{stat.label}</span>
-               </div>
-             </motion.div>
-           ))}
-         </motion.section>
+      {/* ─── Stat Cards ─── */}
+      <div className="adm-stats-grid">
+        {stats.map((stat, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.07 }}
+            whileHover={{ y: -4, scale: 1.02 }}
+            className="adm-stat-card"
+            style={{ borderColor: stat.border }}
+          >
+            <div className="adm-stat-icon" style={{ background: stat.bg, color: stat.color }}>
+              {stat.icon}
+            </div>
+            <div className="adm-stat-body">
+              <span className="adm-stat-num" style={{ color: stat.color }}>{stat.value}</span>
+              <span className="adm-stat-label">{stat.label}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
 
-         <div className="hq-main-layout">
-           <motion.div 
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="layer-card hq-analytics-box"
-           >
-             <div className="box-top">
-               <div className="box-title">
-                 <Activity size={18} />
-                 <h3>Attendance Logistics</h3>
-               </div>
-               <div className="live-pill">LIVE</div>
-             </div>
-             <AttendanceAnalytics />
-           </motion.div>
+      {/* ─── Analytics ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="adm-section-card"
+      >
+        <div className="adm-card-header">
+          <div className="adm-card-title">
+            <Activity size={18} />
+            <h3>Attendance Distribution</h3>
+          </div>
+          <div className="adm-live-badge">LIVE</div>
+        </div>
+        <AttendanceAnalytics />
+      </motion.div>
 
-           <motion.aside 
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="layer-card hq-pending-box"
-           >
-             <div className="box-top">
-               <h3>Pending Approvals</h3>
-               <button className="text-action-link">Review All</button>
-             </div>
-             
-             <div className="hq-stream">
-               <AnimatePresence>
-                {data?.pendingLeaves?.length > 0 ? (
-                  data.pendingLeaves.map((leave, idx) => (
-                    <motion.div 
-                      key={idx}
-                      whileHover={{ x: 5 }}
-                      className="hq-activity-row"
-                    >
-                      <div className="hq-avatar">{leave.employee_name?.[0]}</div>
-                      <div className="hq-row-info">
-                        <h5>{leave.employee_name}</h5>
-                        <p>{leave.reason}</p>
-                      </div>
-                      <ChevronRight size={14} className="hq-row-arrow" />
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="hq-empty">Ops sector clear. No pending tasks.</div>
-                )}
-               </AnimatePresence>
-             </div>
-           </motion.aside>
-         </div>
+      {/* ─── Full Oversight Panel ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <AdminStaffPanel />
+      </motion.div>
 
-         {/* ===== TOTAL OVERSIGHT PANEL ===== */}
-         <motion.div
-           initial={{ y: 30, opacity: 0 }}
-           animate={{ y: 0, opacity: 1 }}
-           transition={{ delay: 0.5 }}
-           style={{ marginTop: '30px' }}
-         >
-           <AdminStaffPanel />
-         </motion.div>
+      <style jsx>{`
+        .adm-page { width: 100%; display: flex; flex-direction: column; gap: 28px; }
 
-       </div>
-
-       <style jsx>{`
-        .hq-universe {
-          min-height: 100vh;
-          background: #040508;
-          position: relative;
-          padding: 40px 30px;
-          color: white;
-        }
-
-        .hq-ambience {
-          position: fixed;
-          top: 0; left: 0; width: 100%; height: 100%;
-          pointer-events: none;
-        }
-
-        .h-blob {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(120px);
-          opacity: 0.04;
-        }
-
-        .hb1 { width: 800px; height: 800px; background: #0056ff; top: -10%; left: -10%; }
-        .hb2 { width: 600px; height: 600px; background: #00d2ff; bottom: -10%; right: -10%; }
-
-        .hq-content {
-          max-width: 1440px;
-          margin: 0 auto;
-          position: relative;
-          z-index: 10;
-        }
-
-        .hq-header {
+        .adm-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 40px;
-          padding: 0 5px;
+          flex-wrap: wrap;
+          gap: 16px;
         }
 
-        .hq-sub {
-          font-size: 0.7rem;
-          color: var(--primary-glow);
-          letter-spacing: 4px;
-          font-weight: 800;
-          margin-top: 5px;
-        }
+        .adm-title { font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 4px; }
+        .adm-sub { color: rgba(255,255,255,0.35); font-size: 0.82rem; font-weight: 600; }
 
-        .hq-calendar {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          padding: 10px 22px;
-          border-radius: 30px;
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--text-muted);
+        .adm-refresh-btn {
+          display: flex; align-items: center; gap: 8px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #fff; padding: 10px 20px;
+          border-radius: 12px; font-size: 0.82rem;
+          font-weight: 700; cursor: pointer; transition: 0.2s;
         }
+        .adm-refresh-btn:hover { background: rgba(255,255,255,0.08); }
+        .spin { animation: spin 1s infinite linear; }
 
-        .hq-stats-grid {
+        .adm-stats-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 25px;
-          margin-bottom: 30px;
+          gap: 18px;
         }
 
-        .hq-stat-card {
-          padding: 25px;
-          display: flex;
-          gap: 20px;
-          align-items: center;
-        }
-
-        .stat-icon-wrap {
-          width: 50px;
-          height: 50px;
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: 14px;
+        .adm-stat-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid;
+          border-radius: 18px;
+          padding: 24px;
           display: flex;
           align-items: center;
-          justify-content: center;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          gap: 18px;
+          cursor: default;
+          transition: all 0.2s;
         }
 
-        .blue-theme .stat-icon-wrap { color: #3b82f6; border-color: rgba(59, 130, 246, 0.2); }
-        .emerald-theme .stat-icon-wrap { color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
-        .purple-theme .stat-icon-wrap { color: #a855f7; border-color: rgba(168, 85, 247, 0.2); }
-        .cyan-theme .stat-icon-wrap { color: #06b6d4; border-color: rgba(6, 182, 212, 0.2); }
-
-        .stat-n { font-size: 1.8rem; font-weight: 900; display: block; }
-        .trend-up { font-size: 0.65rem; color: #10b981; font-weight: 800; border-radius: 20px; background: rgba(16, 185, 129, 0.05); padding: 2px 8px; margin-left: 10px; }
-
-        .stat-title { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-
-        .hq-main-layout {
-          display: grid;
-          grid-template-columns: 2fr 1fr;
-          gap: 30px;
-        }
-
-        .box-top {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 25px;
-          padding-bottom: 15px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .hq-analytics-box, .hq-pending-box { padding: 30px; }
-
-        .live-pill {
-          background: rgba(239, 68, 68, 0.1);
-          color: #ef4444;
-          font-size: 0.6rem;
-          font-weight: 900;
-          letter-spacing: 2px;
-          padding: 4px 12px;
-          border-radius: 30px;
-          border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-
-        .hq-stream { display: flex; flex-direction: column; gap: 15px; }
-
-        .hq-activity-row {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          padding: 15px;
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: 16px;
-          cursor: pointer;
-          border: 1px solid transparent;
-        }
-
-        .hq-activity-row:hover {
-          background: rgba(255, 255, 255, 0.04);
-          border-color: rgba(0, 210, 255, 0.2);
-        }
-
-        .hq-avatar {
-          width: 38px; height: 38px;
-          background: linear-gradient(135deg, #0056ff, #00d2ff);
-          border-radius: 50%;
+        .adm-stat-icon {
+          width: 52px; height: 52px; border-radius: 14px;
           display: flex; align-items: center; justify-content: center;
-          font-weight: 900; font-size: 0.8rem;
+          flex-shrink: 0;
         }
 
-        .hq-row-info h5 { font-size: 0.9rem; margin-bottom: 2px; }
-        .hq-row-info p { font-size: 0.7rem; color: var(--text-muted); }
+        .adm-stat-num {
+          display: block;
+          font-size: 2rem; font-weight: 900; line-height: 1;
+          margin-bottom: 6px;
+        }
+        .adm-stat-label {
+          font-size: 0.72rem; font-weight: 800;
+          text-transform: uppercase; letter-spacing: 1px;
+          color: rgba(255,255,255,0.4);
+        }
 
-        .hq-loading { height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; font-weight: 700; color: var(--primary-glow); }
-        .hq-spinner { width: 30px; height: 30px; border: 2px solid rgba(0, 210, 255, 0.1); border-top-color: var(--primary-glow); border-radius: 50%; animation: spin 1s infinite linear; }
+        .adm-section-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 20px;
+          padding: 28px;
+        }
+
+        .adm-card-header {
+          display: flex; justify-content: space-between; align-items: center;
+          margin-bottom: 24px; padding-bottom: 16px;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .adm-card-title { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.6); }
+        .adm-card-title h3 { font-size: 1rem; font-weight: 800; color: #fff; }
+
+        .adm-live-badge {
+          font-size: 0.6rem; font-weight: 900; letter-spacing: 2px;
+          background: rgba(239,68,68,0.1); color: #ef4444;
+          border: 1px solid rgba(239,68,68,0.2);
+          padding: 4px 12px; border-radius: 20px;
+        }
+
+        .adm-loading { height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: rgba(255,255,255,0.4); font-weight: 600; }
+        .adm-spinner { width: 28px; height: 28px; border: 2px solid rgba(0,210,255,0.1); border-top-color: #4deaff; border-radius: 50%; animation: spin 1s infinite linear; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        @media (max-width: 1200px) {
-          .hq-stats-grid { grid-template-columns: 1fr 1fr; }
-          .hq-main-layout { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 1100px) { .adm-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .adm-stats-grid { grid-template-columns: 1fr 1fr; } .adm-title { font-size: 1.5rem; } }
       `}</style>
     </div>
   );
