@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 class Attendance {
   static async markAttendance(attendanceData) {
-    const [result] = await db.execute(`
+    const [result] = await db.query(`
       INSERT INTO attendance (employee_id, check_in, attendance_type, ip_address, latitude, longitude, leave_request_id)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `, [
