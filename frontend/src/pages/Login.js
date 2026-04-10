@@ -2,14 +2,39 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, Eye, EyeOff, Github, Chrome, ShieldCheck } from 'lucide-react';
 import '../styles/Login.css';
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Mouse tilt tracking
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+
+  const handleMouseMove = (e) => {
+    const card = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - card.left;
+    const y = e.clientY - card.top;
+    const centerX = card.width / 2;
+    const centerY = card.height / 2;
+    const rotateXValue = (y - centerY) / 20;
+    const rotateYValue = (centerX - x) / 20;
+
+    setRotateX(rotateXValue);
+    setRotateY(rotateYValue);
+  };
+
+  const handleMouseLeave = () => {
+    setRotateX(0);
+    setRotateY(0);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,72 +56,131 @@ const Login = ({ onLoginSuccess }) => {
         navigate('/employee/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Authentication denied. Check your credentials.');
+      setError(err.response?.data?.error || 'Access Denied: Invalid Credentials');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-page">
-      <div className="vibrant-bg">
-        <div className="floating-blob blob-1"></div>
-        <div className="floating-blob blob-2"></div>
-        <div className="floating-blob blob-3"></div>
-        <div className="floating-blob blob-4"></div>
-        <div className="glass-grain"></div>
+    <div className="login-universe">
+      {/* 3D Floating Elements */}
+      <div className="parallax-bg">
+        <motion.div 
+          animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
+          transition={{ duration: 8, repeat: Infinity }}
+          className="float-obj cube-1"
+        ></motion.div>
+        <motion.div 
+          animate={{ y: [0, 30, 0], x: [0, -20, 0] }}
+          transition={{ duration: 10, repeat: Infinity, delay: 1 }}
+          className="float-obj orb-1"
+        ></motion.div>
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 5, repeat: Infinity }}
+          className="bg-glow"
+        ></motion.div>
       </div>
-      
-      <div className="login-container animate-fade-in">
-        <div className="layer-card login-card">
-          <header className="login-card-header">
-            <div className="logo-wrapper-grand">
-              <img src="/logo.png" alt="Creinx" className="login-logo-grand" />
-            </div>
-          </header>
 
-          <form onSubmit={handleSubmit} className="login-form-minimal">
-            <div className="input-layer-expanded">
-              <div className="field-group">
-                <span className="field-icon-svg">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                </span>
+      <motion.div 
+        className="login-perspective"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{ perspective: 1000 }}
+      >
+        <motion.div 
+          className="login-card-layered"
+          style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+        >
+          {/* Logo Section */}
+          <div className="card-header-premium">
+            <motion.div 
+              style={{ transform: 'translateZ(50px)' }}
+              className="logo-container-3d"
+            >
+              <img src="/logo.png" alt="Creinx" className="logo-main" />
+            </motion.div>
+            <motion.div style={{ transform: 'translateZ(30px)' }}>
+              <p className="auth-label">SECURE AUTHENTICATION</p>
+            </motion.div>
+          </div>
+
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="auth-form-3d" style={{ transform: 'translateZ(40px)' }}>
+            <div className="input-group-3d">
+              <label>Work ID</label>
+              <div className="input-field">
+                <Mail size={18} className="field-icon" />
                 <input
                   type="email"
-                  className="glass-input-grand"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ENTER THE ID"
+                  placeholder="Enter your email"
                   required
                 />
               </div>
             </div>
 
-            <div className="input-layer-expanded">
-              <div className="field-group">
-                <span className="field-icon-svg">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                </span>
+            <div className="input-group-3d">
+              <label>Security Key</label>
+              <div className="input-field">
+                <Lock size={18} className="field-icon" />
                 <input
-                  type="password"
-                  className="glass-input-grand"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="ENTER PASSWORD"
+                  placeholder="Enter your password"
                   required
                 />
+                <button 
+                  type="button" 
+                  className="show-pwd-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
-            {error && <div className="error-layer">{error}</div>}
+            <AnimatePresence>
+              {error && (
+                <motion.div 
+                  initial={{ x: -10, opacity: 0 }}
+                  animate={{ x: [ -10, 10, -10, 10, 0 ], opacity: 1 }}
+                  className="error-shake"
+                >
+                  <ShieldCheck size={16} /> {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <button type="submit" className="login-btn-grand" disabled={loading}>
-              {loading ? <span className="spinner"></span> : 'INITIALIZE SESSION'}
-              <div className="btn-overlay"></div>
-            </button>
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="login-submit-premium"
+              disabled={loading}
+            >
+              {loading ? <div className="loader-dots"><span>.</span><span>.</span><span>.</span></div> : 'INITIALIZE SESSION'}
+            </motion.button>
           </form>
-        </div>
-      </div>
+
+          {/* Social Links (UI Only) */}
+          <div className="social-divider" style={{ transform: 'translateZ(20px)' }}>
+            <span>OR ACCESS WITH</span>
+          </div>
+          
+          <div className="social-actions-3d" style={{ transform: 'translateZ(30px)' }}>
+            <motion.button whileHover={{ y: -2 }} className="social-btn"><Chrome size={20} /></motion.button>
+            <motion.button whileHover={{ y: -2 }} className="social-btn"><Github size={20} /></motion.button>
+          </div>
+
+          <div className="card-footer-3d" style={{ transform: 'translateZ(10px)' }}>
+             <a href="#forgot" className="footer-link">Lost Credentials?</a>
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };
