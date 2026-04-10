@@ -2,18 +2,24 @@ const db = require('../config/db');
 
 class Attendance {
   static async markAttendance(attendanceData) {
-    const [result] = await db.query(`
-      INSERT INTO attendance (employee_id, check_in, attendance_type, ip_address, latitude, longitude, leave_request_id)
+    // Bulletproof direct query for Aiven compatibility
+    const query = `
+      INSERT INTO attendance 
+      (employee_id, check_in, attendance_type, ip_address, latitude, longitude, leave_request_id)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [
-      attendanceData.employee_id,
+    `;
+    
+    const values = [
+      parseInt(attendanceData.employee_id),
       attendanceData.check_in,
       attendanceData.attendance_type,
       attendanceData.ip_address || null,
-      attendanceData.latitude !== undefined ? attendanceData.latitude : null,
-      attendanceData.longitude !== undefined ? attendanceData.longitude : null,
-      attendanceData.leave_request_id !== undefined ? attendanceData.leave_request_id : null
-    ]);
+      attendanceData.latitude !== undefined && attendanceData.latitude !== null ? parseFloat(attendanceData.latitude) : null,
+      attendanceData.longitude !== undefined && attendanceData.longitude !== null ? parseFloat(attendanceData.longitude) : null,
+      attendanceData.leave_request_id !== undefined && attendanceData.leave_request_id !== null ? parseInt(attendanceData.leave_request_id) : null
+    ];
+
+    const [result] = await db.query(query, values);
     return result.insertId;
   }
 
@@ -38,7 +44,7 @@ class Attendance {
   }
 
   static async getReport(startDate, endDate) {
-    const [rows] = await db.execute(
+    const [rows] = await db.query(
       'SELECT * FROM attendance WHERE check_in BETWEEN ? AND ?',
       [startDate, endDate]
     );
@@ -68,7 +74,7 @@ class Attendance {
   }
 
   static async getDailyAnalytics(startDate, endDate) {
-    const [rows] = await db.execute(`
+    const [rows] = await db.query(`
       SELECT
         DATE(check_in) as date,
         attendance_type,
@@ -82,7 +88,7 @@ class Attendance {
   }
 
   static async getWeeklyAnalytics(startDate, endDate) {
-    const [rows] = await db.execute(`
+    const [rows] = await db.query(`
       SELECT
         WEEK(check_in, 1) as week,
         YEAR(check_in) as year,
@@ -97,7 +103,7 @@ class Attendance {
   }
 
   static async getMonthlyAnalytics(startDate, endDate) {
-    const [rows] = await db.execute(`
+    const [rows] = await db.query(`
       SELECT
         MONTH(check_in) as month,
         YEAR(check_in) as year,
@@ -113,4 +119,3 @@ class Attendance {
 }
 
 module.exports = Attendance;
-
