@@ -9,10 +9,10 @@ class Attendance {
       attendanceData.employee_id,
       attendanceData.check_in,
       attendanceData.attendance_type,
-      attendanceData.ip_address,
-      attendanceData.latitude,
-      attendanceData.longitude,
-      attendanceData.leave_request_id
+      attendanceData.ip_address || null,
+      attendanceData.latitude !== undefined ? attendanceData.latitude : null,
+      attendanceData.longitude !== undefined ? attendanceData.longitude : null,
+      attendanceData.leave_request_id !== undefined ? attendanceData.leave_request_id : null
     ]);
     return result.insertId;
   }
