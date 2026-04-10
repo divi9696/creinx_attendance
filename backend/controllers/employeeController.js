@@ -28,9 +28,17 @@ exports.markAttendance = async (req, res) => {
       return res.status(400).json({ error: validation.error });
     }
 
+    const now = new Date();
+    const localDateTime = now.getFullYear() + '-' + 
+                         String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                         String(now.getDate()).padStart(2, '0') + ' ' + 
+                         String(now.getHours()).padStart(2, '0') + ':' + 
+                         String(now.getMinutes()).padStart(2, '0') + ':' + 
+                         String(now.getSeconds()).padStart(2, '0');
+
     const attendanceData = {
       employee_id: employeeId,
-      check_in: new Date().toISOString().slice(0, 19).replace('T', ' '), // MySQL format
+      check_in: localDateTime,
       attendance_type: type,
       ip_address: getClientIP(req)
     };
