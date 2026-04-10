@@ -40,6 +40,10 @@ function AppContent({ user, loading, onLoginSuccess, onPasswordChanged, onLogout
           path="/employee/dashboard"
           element={user?.role === 'employee' ? <EmployeeDashboard /> : <Navigate to="/login" />}
         />
+        <Route
+          path="/change-password"
+          element={user ? <ChangePassword user={user} onPasswordChanged={onPasswordChanged} isManual={true} /> : <Navigate to="/login" />}
+        />
         <Route path="/" element={user ? <Navigate to={user.role === 'admin' ? '/admin/dashboards' : '/employee/dashboard'} /> : <Navigate to="/login" />} />
       </Routes>
     </>

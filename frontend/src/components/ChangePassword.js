@@ -1,145 +1,154 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../apiConfig';
-import '../styles/ChangePassword.css';
+import { useNavigate } from 'react-router-dom';
 
-const ChangePassword = ({ user, onPasswordChanged }) => {
-  const navigate = useNavigate();
+const ChangePassword = ({ user, onPasswordChanged, isManual }) => {
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    // Validation
-    if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    if (formData.newPassword !== formData.confirmPassword) {
-      setError('New passwords do not match');
-      return;
-    }
-
-    if (formData.newPassword.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
     setLoading(true);
+    setError('');
 
     try {
       const token = localStorage.getItem('token');
       await axios.post(`${API_URL}/auth/change-password`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      // Update localStorage to mark password as changed
-      const updatedUser = { ...user, first_login: 0 };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-
-      // Call callback
-      if (onPasswordChanged) {
-        onPasswordChanged();
-      }
-
-      // Redirect to dashboard
-      if (user.role === 'admin') {
-        navigate('/admin/dashboards');
-      } else {
-        navigate('/employee/dashboard');
+      
+      setSuccess('Security credentials updated successfully!');
+      onPasswordChanged();
+      
+      if (isManual) {
+        setTimeout(() => navigate('/'), 2000);
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to change password');
-      console.error(err);
+      setError(err.response?.data?.error || 'Update failed. Check your current password.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="change-password-overlay">
-      <div className="change-password-container">
-        <div className="change-password-content">
-          <h1>Set Your Password</h1>
-          <p className="subtitle">Welcome! This is your first login. Please set a secure password for your account.</p>
+    <div className="change-password-page animate-fade-in">
+      <div className="glass-panel settings-card">
+        <header className="settings-header">
+          <div className="settings-icon">🛡️</div>
+          <h2>Security Settings</h2>
+          <p>Update your access credentials</p>
+        </header>
 
-          {error && <div className="error-message">{error}</div>}
-
-          <form onSubmit={handleSubmit} className="change-password-form">
-            <div className="form-group">
-              <label htmlFor="currentPassword">Current Password (Default: creinx123) *</label>
-              <input
-                type="password"
-                id="currentPassword"
-                name="currentPassword"
-                value={formData.currentPassword}
-                onChange={handleInputChange}
-                placeholder="Enter current password"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="newPassword">New Password *</label>
-              <input
-                type="password"
-                id="newPassword"
-                name="newPassword"
-                value={formData.newPassword}
-                onChange={handleInputChange}
-                placeholder="Enter new password"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm New Password *</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                placeholder="Confirm new password"
-                required
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              className="submit-btn" 
-              disabled={loading}
-            >
-              {loading ? 'Setting Password...' : 'Set Password & Continue'}
-            </button>
-          </form>
-
-          <div className="password-requirements">
-            <strong>Password Requirements:</strong>
-            <ul>
-              <li>Minimum 6 characters</li>
-              <li>Strong password recommended</li>
-            </ul>
+        <form onSubmit={handleSubmit} className="premium-form">
+          <div className="form-group">
+            <label>Current Password</label>
+            <input
+              type="password"
+              className="glass-input"
+              value={formData.currentPassword}
+              onChange={(e) => setFormData({...formData, currentPassword: e.target.value})}
+              required
+            />
           </div>
-        </div>
+
+          <div className="form-group">
+            <label>New Password</label>
+            <input
+              type="password"
+              className="glass-input"
+              value={formData.newPassword}
+              onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
+              required
+              minLength="6"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Confirm Identity</label>
+            <input
+              type="password"
+              className="glass-input"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              required
+            />
+          </div>
+
+          {error && <div className="error-toast">{error}</div>}
+          {success && <div className="success-toast">{success}</div>}
+
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'Optimizing...' : 'Rotate Password'}
+          </button>
+        </form>
       </div>
+
+      <style jsx>{`
+        .change-password-page {
+          height: calc(100vh - 150px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .settings-card {
+          width: 450px;
+          padding: 40px;
+        }
+
+        .settings-header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        .settings-icon {
+          font-size: 2.5rem;
+          margin-bottom: 10px;
+        }
+
+        .settings-header h2 {
+          font-size: 1.5rem;
+          margin-bottom: 5px;
+        }
+
+        .settings-header p {
+          color: var(--text-muted);
+          font-size: 0.9rem;
+        }
+
+        .form-group {
+          margin-bottom: 20px;
+        }
+
+        .form-group label {
+          display: block;
+          margin-bottom: 8px;
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .glass-input {
+          width: 100%;
+        }
+
+        .btn-primary {
+          width: 100%;
+          margin-top: 10px;
+        }
+
+        .error-toast { background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 15px; border: 1px solid rgba(239, 68, 68, 0.2); text-align: center; }
+        .success-toast { background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid rgba(34, 197, 94, 0.2); text-align: center; }
+      `}</style>
     </div>
   );
 };

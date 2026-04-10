@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
 
 const Login = ({ onLoginSuccess }) => {
@@ -8,6 +9,7 @@ const Login = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +24,13 @@ const Login = ({ onLoginSuccess }) => {
       localStorage.setItem('user', JSON.stringify(user));
       
       onLoginSuccess(user);
+      
+      // Automatic Redirection based on role
+      if (user.role === 'admin') {
+        navigate('/admin/dashboards');
+      } else {
+        navigate('/employee/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
     } finally {
