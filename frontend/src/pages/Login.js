@@ -165,20 +165,6 @@ const Login = ({ onLoginSuccess }) => {
               {loading ? <div className="loader-dots"><span>.</span><span>.</span><span>.</span></div> : 'INITIALIZE SESSION'}
             </motion.button>
           </form>
-
-          {/* Social Links (UI Only) */}
-          <div className="social-divider" style={{ transform: 'translateZ(20px)' }}>
-            <span>OR ACCESS WITH</span>
-          </div>
-          
-          <div className="social-actions-3d" style={{ transform: 'translateZ(30px)' }}>
-            <motion.button whileHover={{ y: -2 }} className="social-btn"><Globe size={20} /></motion.button>
-            <motion.button whileHover={{ y: -2 }} className="social-btn"><User size={20} /></motion.button>
-          </div>
-
-          <div className="card-footer-3d" style={{ transform: 'translateZ(10px)' }}>
-             <a href="#forgot" className="footer-link">Lost Credentials?</a>
-          </div>
         </motion.div>
       </motion.div>
     </div>
