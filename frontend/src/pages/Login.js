@@ -48,23 +48,18 @@ const Login = ({ onLoginSuccess }) => {
       <div className="login-container animate-fade-in">
         <div className="layer-card login-card">
           <header className="login-card-header">
-            <div className="logo-wrapper">
-              <img src="/logo.png" alt="Creinx" className="login-logo-refined" />
-            </div>
-            <div className="header-titles">
-               <h1 className="brand-fonts">System Access</h1>
-               <p className="login-meta">AUTHENTICATION GATEWAY</p>
+            <div className="logo-wrapper-grand">
+              <img src="/logo.png" alt="Creinx" className="login-logo-grand" />
             </div>
           </header>
 
-          <form onSubmit={handleSubmit} className="login-form-layered">
-            <div className="input-layer">
-              <label>Work Identity</label>
+          <form onSubmit={handleSubmit} className="login-form-minimal">
+            <div className="input-layer-expanded">
               <div className="field-group">
-                <span className="field-icon">📧</span>
+                <span className="field-icon-grand">📧</span>
                 <input
                   type="email"
-                  className="glass-input"
+                  className="glass-input-grand"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ENTER THE ID"
@@ -73,13 +68,12 @@ const Login = ({ onLoginSuccess }) => {
               </div>
             </div>
 
-            <div className="input-layer">
-              <label>Security Key</label>
+            <div className="input-layer-expanded">
               <div className="field-group">
-                <span className="field-icon">🔑</span>
+                <span className="field-icon-grand">🔑</span>
                 <input
                   type="password"
-                  className="glass-input"
+                  className="glass-input-grand"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="ENTER PASSWORD"
@@ -90,7 +84,7 @@ const Login = ({ onLoginSuccess }) => {
 
             {error && <div className="error-layer">{error}</div>}
 
-            <button type="submit" className="login-btn-elite" disabled={loading}>
+            <button type="submit" className="login-btn-grand" disabled={loading}>
               {loading ? <span className="spinner"></span> : 'INITIALIZE SESSION'}
               <div className="btn-overlay"></div>
             </button>
@@ -104,7 +98,7 @@ const Login = ({ onLoginSuccess }) => {
             <div className="status-spacer"></div>
             <div className="status-item">
               <span className="status-dot pulse"></span>
-              <span>ENCRYPTED V2</span>
+              <span>SECURE V2</span>
             </div>
           </div>
         </div>
