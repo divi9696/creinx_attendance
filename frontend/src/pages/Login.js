@@ -3,7 +3,7 @@ import axios from 'axios';
 import API_URL from '../apiConfig';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, Github, Chrome, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Globe, User, ShieldCheck } from 'lucide-react';
 import '../styles/Login.css';
 
 const Login = ({ onLoginSuccess }) => {
@@ -172,8 +172,8 @@ const Login = ({ onLoginSuccess }) => {
           </div>
           
           <div className="social-actions-3d" style={{ transform: 'translateZ(30px)' }}>
-            <motion.button whileHover={{ y: -2 }} className="social-btn"><Chrome size={20} /></motion.button>
-            <motion.button whileHover={{ y: -2 }} className="social-btn"><Github size={20} /></motion.button>
+            <motion.button whileHover={{ y: -2 }} className="social-btn"><Globe size={20} /></motion.button>
+            <motion.button whileHover={{ y: -2 }} className="social-btn"><User size={20} /></motion.button>
           </div>
 
           <div className="card-footer-3d" style={{ transform: 'translateZ(10px)' }}>
