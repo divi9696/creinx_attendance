@@ -1,46 +1,136 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
+/* ─── Design Tokens ─── */
 :root {
-  --primary-glow: #4deaff;
-  --primary-deep: #337aff;
-  --bg-dark: #030406;
-  --bg-card: rgba(13, 15, 22, 0.95);
-  
-  --text-main: #f8fafc;
-  --text-muted: #cbd5e1;
-  
-  --shadow-premium: 0 0 50px rgba(0, 210, 255, 0.1);
-  --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --primary:        #4deaff;
+  --primary-deep:   #0056ff;
+  --bg:             #070810;
+  --bg-card:        rgba(255, 255, 255, 0.03);
+  --border:         rgba(255, 255, 255, 0.07);
+  --border-active:  rgba(77, 234, 255, 0.25);
+  --text-main:      #ffffff;
+  --text-sub:       rgba(255, 255, 255, 0.45);
+  --text-dim:       rgba(255, 255, 255, 0.2);
+  --green:          #22c55e;
+  --red:            #ef4444;
+  --purple:         #a855f7;
+  --orange:         #fb923c;
+  --radius-lg:      20px;
+  --radius-md:      14px;
+  --radius-sm:      10px;
+  --transition:     all 0.2s ease;
+  --shadow:         0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-glow:    0 0 30px rgba(77, 234, 255, 0.15);
+
+  /* Legacy aliases - kept for older components */
+  --primary-glow:   #4deaff;
+  --text-muted:     rgba(255, 255, 255, 0.45);
+  --glass-border:   rgba(255, 255, 255, 0.07);
+  --accent-blue:    #0056ff;
 }
 
-* {
+/* ─── Reset ─── */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Outfit', sans-serif;
-  background-color: var(--bg-dark);
-  color: var(--text-main);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
 }
 
-h1, h2, h3, .brand-fonts {
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ─── Typography ─── */
+h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', sans-serif;
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1.2;
 }
 
-/* Centralized Utility */
-.flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+a { text-decoration: none; color: inherit; }
+button { font-family: 'Outfit', sans-serif; }
+input, select, textarea { font-family: 'Outfit', sans-serif; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ─── Selection ─── */
+::selection { background: rgba(77, 234, 255, 0.2); color: #fff; }
+
+/* ─── Shared Card ─── */
+.layer-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: var(--transition);
 }
 
-.glass-input {
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: 0.5px;
+/* ─── Shared Utilities ─── */
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.glass-input { font-family: 'Outfit', sans-serif; }
+.brand-fonts { font-family: 'Outfit', sans-serif; font-weight: 900; }
+
+/* ─── Splash Screen ─── */
+.splash-screen {
+  height: 100vh; width: 100vw;
+  background: #040508;
+  display: flex; align-items: center; justify-content: center;
+  position: fixed; top: 0; left: 0; z-index: 10000;
+}
+.splash-content { text-align: center; animation: logoPulse 2.5s ease-in-out infinite; }
+.splash-logo { width: 220px; filter: drop-shadow(0 0 30px rgba(77, 234, 255, 0.35)); margin-bottom: 40px; }
+.splash-loader { width: 200px; height: 2px; background: rgba(255,255,255,0.05); margin: 0 auto; border-radius: 2px; overflow: hidden; }
+.loader-bar { width: 100%; height: 100%; background: linear-gradient(90deg, transparent, var(--primary), transparent); animation: loadingMove 2s infinite linear; }
+
+/* ─── App Loading ─── */
+.app-loading {
+  height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-sub); font-size: 0.85rem;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* ─── Animations ─── */
+@keyframes logoPulse {
+  0%   { transform: scale(0.97); opacity: 0.8; }
+  50%  { transform: scale(1);    opacity: 1;   }
+  100% { transform: scale(0.97); opacity: 0.8; }
+}
+@keyframes loadingMove {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%);  }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%,100% { opacity: 0.4; }
+  50%      { opacity: 1;   }
+}
+
+/* ─── Print ─── */
+@media print {
+  .sidebar, .emp-add-btn, .rpt-actions { display: none !important; }
+  .main-content { overflow: visible !important; }
+  body { background: #fff !important; color: #000 !important; }
 }
