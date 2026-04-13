@@ -14,23 +14,32 @@ const setupDatabase = async () => {
     if (result.count === 0) {
       // Hash passwords
       const adminPass = bcrypt.hashSync('admin123', 10);
-      const empPass = bcrypt.hashSync('emp123', 10);
+      const empPass   = bcrypt.hashSync('emp123', 10);
 
-      // Insert test users
+      // Insert seed users with employee_uid and is_verified=1
       await db.query(`
-        INSERT INTO employees (name, email, password, role, department)
-        VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)
+        INSERT INTO employees (employee_uid, name, email, mobile, password, role, department, is_verified)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?)
       `, [
-        'Admin User', 'admin@company.com', adminPass, 'admin', 'Management',
-        'John Doe', 'john@company.com', empPass, 'employee', 'IT',
-        'Jane Smith', 'jane@company.com', empPass, 'employee', 'HR'
+        'CRX0001', 'Admin User',  'admin@company.com', '9000000001', adminPass, 'admin',    'Management', 1,
+        'CRX0002', 'John Doe',    'john@company.com',  '9000000002', empPass,   'employee', 'IT',         1,
+        'CRX0003', 'Jane Smith',  'jane@company.com',  '9000000003', empPass,   'employee', 'HR',         1,
       ]);
 
       console.log('✅ Test users created:');
-      console.log('   Admin: admin@company.com / admin123');
-      console.log('   Employee: john@company.com / emp123');
-      console.log('   Employee: jane@company.com / emp123');
+      console.log('   Admin:    CRX0001 / admin123');
+      console.log('   Employee: CRX0002 / emp123 (John Doe)');
+      console.log('   Employee: CRX0003 / emp123 (Jane Smith)');
     } else {
+      // Backfill employee_uid for existing employees that don't have one
+      const [existing] = await db.query(`SELECT id FROM employees WHERE employee_uid IS NULL ORDER BY id ASC`);
+      for (let i = 0; i < existing.length; i++) {
+        const uid = 'CRX' + String(i + 1).padStart(4, '0');
+        await db.query(
+          `UPDATE employees SET employee_uid = ?, is_verified = 1 WHERE id = ? AND employee_uid IS NULL`,
+          [uid, existing[i].id]
+        ).catch(() => {}); // skip if uid collision
+      }
       console.log('✅ Database already initialized with users');
     }
   } catch (error) {
@@ -39,4 +48,3 @@ const setupDatabase = async () => {
 };
 
 module.exports = setupDatabase;
-

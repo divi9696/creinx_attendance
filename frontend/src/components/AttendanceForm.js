@@ -346,6 +346,13 @@ const AttendanceForm = ({ onSuccess }) => {
           overflow: hidden;
         }
 
+        @media (max-width: 500px) {
+          .session-row { flex-direction: column; gap: 16px; }
+          .session-divider { width: 40px; height: 1px; }
+          .s-time { font-size: 1rem; }
+          .mark-action-btn-elite, .checkout-btn-elite, .session-complete-badge { height: 50px; font-size: 0.8rem; }
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
       `}</style>

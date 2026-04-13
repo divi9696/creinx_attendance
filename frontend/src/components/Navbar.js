@@ -1,15 +1,27 @@
-import React from 'react';
-import { NavLink, Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Settings, LogOut, Layout, Users, BarChart3, Fingerprint } from 'lucide-react';
+import React, { useState } from 'react';
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Settings, LogOut, Layout, Users, BarChart3, Fingerprint, ChevronDown, Lock, User, Bell, Shield } from 'lucide-react';
 
 const Navbar = ({ user, onLogout }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [showMenu, setShowMenu] = useState(false);
 
   if (!user || location.pathname === '/login') return null;
 
+  const handleChangePassword = () => {
+    setShowMenu(false);
+    navigate('/change-password');
+  };
+
+  const handleLogout = () => {
+    setShowMenu(false);
+    onLogout();
+  };
+
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       className="orbital-dock"
@@ -51,25 +63,92 @@ const Navbar = ({ user, onLogout }) => {
 
         <div className="dock-user-sector">
           <div className="user-profile-stack">
-            <NavLink to="/change-password" title="Security Settings" className="dock-settings-btn">
-              <motion.div whileHover={{ rotate: 90 }} transition={{ type: 'spring' }}>
-                <Settings size={18} />
-              </motion.div>
-            </NavLink>
             <div className="user-text-stack">
               <span className="dock-user-name">{user.name}</span>
               <span className="dock-user-role">{user.role}</span>
             </div>
+
+            {/* Settings Dropdown Menu */}
+            <div className="user-actions-menu">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowMenu(!showMenu)}
+                className="menu-trigger-btn"
+              >
+                <Settings size={18} />
+                <ChevronDown size={14} className={showMenu ? 'rotated' : ''} />
+              </motion.button>
+
+              <AnimatePresence>
+                {showMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="dropdown-menu"
+                  >
+                    {/* Account Section */}
+                    <div className="menu-section">
+                      <div className="section-label">ACCOUNT</div>
+                      <div className="menu-item info-item">
+                        <User size={16} />
+                        <div className="item-text">
+                          <span className="item-title">Profile Information</span>
+                          <span className="item-desc">{user.email}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="menu-divider"></div>
+
+                    {/* Settings Section */}
+                    <div className="menu-section">
+                      <div className="section-label">SETTINGS</div>
+                      <button onClick={handleChangePassword} className="menu-item">
+                        <Lock size={16} />
+                        <div className="item-text">
+                          <span className="item-title">Change Password</span>
+                          <span className="item-desc">Update security settings</span>
+                        </div>
+                      </button>
+                      <button className="menu-item">
+                        <Shield size={16} />
+                        <div className="item-text">
+                          <span className="item-title">Privacy & Security</span>
+                          <span className="item-desc">Manage your privacy</span>
+                        </div>
+                      </button>
+                      <button className="menu-item">
+                        <Bell size={16} />
+                        <div className="item-text">
+                          <span className="item-title">Notifications</span>
+                          <span className="item-desc">Notification preferences</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="menu-divider"></div>
+
+                    {/* Session Section */}
+                    <div className="menu-section">
+                      <div className="section-label">SESSION</div>
+                      <button onClick={handleLogout} className="menu-item danger">
+                        <LogOut size={16} />
+                        <div className="item-text">
+                          <span className="item-title">Sign Out</span>
+                          <span className="item-desc">End current session</span>
+                        </div>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-          
-          <motion.button 
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onLogout} 
-            className="dock-logout-btn"
-          >
-            <LogOut size={18} />
-          </motion.button>
         </div>
       </div>
 
@@ -175,30 +254,169 @@ const Navbar = ({ user, onLogout }) => {
           border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .dock-settings-btn { color: var(--text-muted); transition: 0.3s; padding-top: 4px; }
-        .dock-settings-btn:hover { color: var(--primary-glow); }
-
         .user-text-stack { display: flex; flex-direction: column; align-items: flex-end; }
         .dock-user-name { color: white; font-size: 0.8rem; font-weight: 700; }
         .dock-user-role { color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; font-weight: 800; }
 
-        .dock-logout-btn {
-          background: rgba(239, 68, 68, 0.05);
-          border: 1px solid rgba(239, 68, 68, 0.1);
-          color: #ef4444;
-          width: 42px; height: 42px;
-          border-radius: 14px;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
+        /* Dropdown Menu Styles */
+        .user-actions-menu {
+          position: relative;
         }
 
-        .dock-logout-btn:hover { background: #ef4444; color: white; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+        .menu-trigger-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          cursor: pointer;
+          padding: 6px 10px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.3s ease;
+          font-size: 0.9rem;
+        }
+
+        .menu-trigger-btn:hover {
+          color: var(--primary-glow);
+          background: rgba(0, 210, 255, 0.05);
+        }
+
+        .menu-trigger-btn svg:last-child {
+          transition: transform 0.3s ease;
+        }
+
+        .menu-trigger-btn .rotated {
+          transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          margin-top: 12px;
+          background: rgba(10, 12, 20, 0.95);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          padding: 12px 0;
+          min-width: 300px;
+          backdrop-filter: blur(20px);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
+                      inset 0 0 20px rgba(0, 210, 255, 0.03);
+          z-index: 10000;
+          max-height: 500px;
+          overflow-y: auto;
+        }
+
+        .dropdown-menu::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-thumb {
+          background: rgba(0, 210, 255, 0.3);
+          border-radius: 10px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 210, 255, 0.5);
+        }
+
+        .menu-section {
+          padding: 8px 0;
+        }
+
+        .section-label {
+          font-size: 0.65rem;
+          font-weight: 900;
+          color: rgba(255, 255, 255, 0.3);
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          padding: 8px 16px 6px;
+        }
+
+        .menu-item {
+          width: 100%;
+          background: transparent;
+          border: none;
+          color: white;
+          cursor: pointer;
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 0.85rem;
+          transition: all 0.2s ease;
+          text-align: left;
+        }
+
+        .menu-item.info-item {
+          cursor: default;
+          pointer-events: none;
+        }
+
+        .menu-item:hover:not(.info-item) {
+          background: rgba(255, 255, 255, 0.04);
+        }
+
+        .menu-item.danger:hover {
+          background: rgba(239, 68, 68, 0.1);
+        }
+
+        .menu-item svg {
+          flex-shrink: 0;
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .menu-item:hover svg {
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        .menu-item.danger svg {
+          color: #ef4444;
+        }
+
+        .menu-item.info-item svg {
+          color: #4deaff;
+        }
+
+        .item-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          flex: 1;
+        }
+
+        .item-title {
+          font-weight: 600;
+          color: white;
+        }
+
+        .item-desc {
+          font-size: 0.7rem;
+          color: rgba(255, 255, 255, 0.4);
+        }
+
+        .menu-divider {
+          height: 1px;
+          background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0)
+          );
+          margin: 8px 0;
+        }
 
         @media (max-width: 900px) {
           .dock-item span, .brand-hq, .user-text-stack { display: none; }
           .dock-links { gap: 5px; }
           .orbital-dock { padding: 0 15px; }
+          .dropdown-menu { right: -10px; min-width: 280px; }
         }
       `}</style>
     </motion.nav>

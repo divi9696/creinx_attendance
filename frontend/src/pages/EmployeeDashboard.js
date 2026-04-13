@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import AttendanceForm from '../components/AttendanceForm';
 import LeaveRequestForm from '../components/LeaveRequestForm';
 import LeaveStatusWidget from '../components/LeaveStatusWidget';
-import { motion } from 'framer-motion';
-import { Clock, Calendar, MessageSquare } from 'lucide-react';
+import EmployeeMonthlyReport from '../components/EmployeeMonthlyReport';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, Calendar, MessageSquare, BarChart2 } from 'lucide-react';
 
 const EmployeeDashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const handleAttendanceSuccess = () => setRefreshKey(prev => prev + 1);
   const handleLeaveSuccess = () => setRefreshKey(prev => prev + 1);
@@ -43,7 +45,35 @@ const EmployeeDashboard = () => {
         </div>
       </motion.div>
 
-      {/* ─── Main Grid ─── */}
+      {/* ─── Tab Bar ─── */}
+      <div className="emp-tabs">
+        <button
+          className={`emp-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dashboard')}
+        >
+          <Clock size={15} /> My Workspace
+        </button>
+        <button
+          className={`emp-tab ${activeTab === 'report' ? 'active' : ''}`}
+          onClick={() => setActiveTab('report')}
+        >
+          <BarChart2 size={15} /> Monthly Report
+        </button>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {activeTab === 'report' ? (
+          <motion.div key="report" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="emp-card" style={{ padding: '28px' }}>
+            <div className="emp-card-top">
+              <div className="emp-card-icon"><BarChart2 size={18} /></div>
+              <div>
+                <h3>My Monthly Attendance</h3>
+                <p>Browse and review your attendance records by month</p>
+              </div>
+            </div>
+            <EmployeeMonthlyReport />
+          </motion.div>
+        ) : (
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -98,6 +128,8 @@ const EmployeeDashboard = () => {
           </motion.div>
         </aside>
       </motion.div>
+        )}
+      </AnimatePresence>
 
       <style jsx>{`
         .emp-page { width: 100%; }
@@ -105,17 +137,18 @@ const EmployeeDashboard = () => {
         .emp-page-header {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: center;
           margin-bottom: 32px;
           flex-wrap: wrap;
-          gap: 16px;
+          gap: 20px;
+          padding-right: 10px;
         }
 
         .emp-page-title {
           font-size: 2rem;
           font-weight: 900;
           color: #fff;
-          margin-bottom: 6px;
+          margin: 0 0 6px 0;
           line-height: 1.2;
         }
 
@@ -123,18 +156,36 @@ const EmployeeDashboard = () => {
           color: rgba(255,255,255,0.4);
           font-size: 0.875rem;
           font-weight: 500;
+          margin: 0;
         }
 
         .today-date-chip {
           background: rgba(255,255,255,0.04);
           border: 1px solid rgba(255,255,255,0.08);
-          padding: 10px 20px;
+          padding: 10px 22px;
           border-radius: 30px;
           font-size: 0.8rem;
           font-weight: 700;
-          color: rgba(255,255,255,0.6);
+          color: rgba(255,255,255,0.8);
           white-space: nowrap;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+          flex-shrink: 0;
         }
+
+        .emp-tabs {
+          display: flex; gap: 8px; margin-bottom: 24px;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          padding-bottom: 12px;
+        }
+        .emp-tab {
+          display: flex; align-items: center; gap: 7px;
+          padding: 9px 18px; border-radius: 12px; border: 1px solid transparent;
+          font-size: 0.82rem; font-weight: 700; cursor: pointer;
+          color: rgba(255,255,255,0.4); background: transparent;
+          transition: all 0.2s; font-family: 'Outfit', sans-serif;
+        }
+        .emp-tab:hover { color: #fff; background: rgba(255,255,255,0.04); }
+        .emp-tab.active { color: #fff; background: rgba(0,210,255,0.08); border-color: rgba(0,210,255,0.2); }
 
         .emp-grid {
           display: grid;
@@ -208,7 +259,13 @@ const EmployeeDashboard = () => {
           .emp-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 600px) {
+          .emp-page-header { flex-direction: column; align-items: stretch; gap: 12px; }
+          .today-date-chip { align-self: flex-start; }
           .emp-page-title { font-size: 1.5rem; }
+          .emp-tabs { overflow-x: auto; white-space: nowrap; padding-bottom: 8px; }
+          .emp-card { padding: 20px; }
+          .emp-card-top { gap: 12px; }
+          .emp-card-icon { width: 36px; height: 36px; }
         }
       `}</style>
     </div>

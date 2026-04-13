@@ -28,14 +28,16 @@ class LeaveRequest {
   }
 
   static async findPendingRequests(limit = 20, offset = 0) {
+    const lim = parseInt(limit, 10);
+    const off = parseInt(offset, 10);
     const [rows] = await db.execute(`
       SELECT lr.*, e.name as employee_name, e.email as employee_email
       FROM leave_requests lr
       JOIN employees e ON lr.employee_id = e.id
       WHERE lr.status = 'pending'
       ORDER BY lr.created_at DESC
-      LIMIT ? OFFSET ?
-    `, [parseInt(limit), parseInt(offset)]);
+      LIMIT ${lim} OFFSET ${off}
+    `);
     return rows;
   }
 

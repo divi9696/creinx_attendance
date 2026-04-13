@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   UserPlus, Edit3, Trash2, X, Briefcase,
   Mail, Building, Calendar, Shield, Search,
-  CheckCircle, AlertTriangle
+  CheckCircle, AlertTriangle, Eye
 } from 'lucide-react';
+import EmployeeDetailDrawer from '../components/EmployeeDetailDrawer';
 
 const Employees = () => {
   const [employees, setEmployees] = useState([]);
@@ -16,10 +17,11 @@ const Employees = () => {
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    name: '', email: '', job_role: '', date_of_join: '', department: '', role: 'employee'
+    name: '', email: '', mobile: '', job_role: '', date_of_join: '', department: '', role: 'employee'
   });
   const [editingId, setEditingId] = useState(null);
   const [toast, setToast] = useState({ show: false, type: '', msg: '' });
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   useEffect(() => { fetchEmployees(); }, []);
 
@@ -57,16 +59,28 @@ const Employees = () => {
     try {
       const url = editingId ? `${API_URL}/admin/employee/${editingId}` : `${API_URL}/admin/employees`;
       const method = editingId ? 'put' : 'post';
-      await axios[method](url, formData, { headers: { Authorization: `Bearer ${token()}` } });
-      showToast('success', editingId ? 'Profile updated successfully.' : 'New employee initialized.');
+      const res = await axios[method](url, formData, { headers: { Authorization: `Bearer ${token()}` } });
+      const uid = res.data?.employee_uid;
+      const emailSent = res.data?.emailSent;
+      showToast(
+        'success',
+        editingId
+          ? 'Profile updated successfully.'
+          : uid
+            ? `Employee created. ID: ${uid}. ${emailSent ? 'Welcome email sent.' : 'Configure email settings.'}`
+            : 'New employee initialized.'
+      );
       resetForm();
       fetchEmployees();
-    } catch { showToast('error', 'Operation failed. Please try again.'); }
+    } catch (err) {
+      showToast('error', err.response?.data?.error || 'Operation failed. Please try again.');
+    }
   };
 
   const handleEdit = (emp) => {
     setFormData({
-      name: emp.name, email: emp.email, job_role: emp.job_role || '',
+      name: emp.name, email: emp.email, mobile: emp.mobile || '',
+      job_role: emp.job_role || '',
       date_of_join: emp.date_of_join ? emp.date_of_join.split('T')[0] : '',
       department: emp.department || '', role: emp.role
     });
@@ -87,7 +101,7 @@ const Employees = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', email: '', job_role: '', date_of_join: '', department: '', role: 'employee' });
+    setFormData({ name: '', email: '', mobile: '', job_role: '', date_of_join: '', department: '', role: 'employee' });
     setEditingId(null);
     setShowForm(false);
   };
@@ -155,6 +169,7 @@ const Employees = () => {
                 <div className="emp-form-grid">
                   {formField(<Shield size={16} />, 'Full Name *', 'name', 'text', true)}
                   {formField(<Mail size={16} />, 'Work Email *', 'email', 'email', true)}
+                  {formField(<span style={{fontSize:'0.9rem'}}>📱</span>, 'Mobile Number *', 'mobile', 'tel', !editingId)}
                   {formField(<Briefcase size={16} />, 'Job Designation', 'job_role')}
                   {formField(<Building size={16} />, 'Department / Sector', 'department')}
                   {formField(<Calendar size={16} />, 'Date of Joining', 'date_of_join', 'date')}
@@ -233,31 +248,41 @@ const Employees = () => {
                     transition={{ delay: idx * 0.04 }}
                     className="emp-row"
                   >
-                    <td>
+                    <td data-label="Identity">
                       <div className="emp-identity">
                         <div className="emp-av">{emp.name[0]}</div>
                         <div>
                           <span className="emp-name">{emp.name}</span>
+                          {emp.employee_uid && (
+                            <span className="emp-uid-chip">{emp.employee_uid}</span>
+                          )}
                           <span className="emp-email">{emp.email}</span>
+                          {emp.mobile && <span className="emp-mobile">{emp.mobile}</span>}
                         </div>
                       </div>
+                      {emp.is_verified === 0 && (
+                        <span className="emp-unverified-badge">⏳ Pending Activation</span>
+                      )}
                     </td>
-                    <td><span className="emp-designation">{emp.job_role || '—'}</span></td>
-                    <td>
+                    <td data-label="Designation"><span className="emp-designation">{emp.job_role || '—'}</span></td>
+                    <td data-label="Sector">
                       <span className="emp-dept-pill">{emp.department || 'Main Ops'}</span>
                     </td>
-                    <td>
+                    <td data-label="Joined">
                       <span className="emp-date">
                         {emp.date_of_join ? new Date(emp.date_of_join).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Role">
                       <span className={`emp-role-badge ${emp.role}`}>
                         {emp.role === 'admin' ? '🛡 Admin' : '👤 Employee'}
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Operations">
                       <div className="emp-ops">
+                        <motion.button whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} onClick={() => setSelectedEmployee(emp)} className="op-btn view" title="View Report">
+                          <Eye size={15} />
+                        </motion.button>
                         <motion.button whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} onClick={() => handleEdit(emp)} className="op-btn edit" title="Edit">
                           <Edit3 size={15} />
                         </motion.button>
@@ -273,6 +298,12 @@ const Employees = () => {
           </table>
         </div>
       </motion.div>
+
+      {/* ─── Employee Detail Drawer ─── */}
+      <EmployeeDetailDrawer
+        employee={selectedEmployee}
+        onClose={() => setSelectedEmployee(null)}
+      />
 
       <style jsx>{`
         .emp-page { width: 100%; display: flex; flex-direction: column; gap: 24px; }
@@ -387,6 +418,19 @@ const Employees = () => {
           font-weight: 900; color: #4deaff; font-size: 1rem;
         }
         .emp-name { display: block; font-weight: 700; color: #fff; font-size: 0.9rem; margin-bottom: 2px; }
+        .emp-uid-chip {
+          display: inline-block; background: rgba(0,210,255,0.08);
+          border: 1px solid rgba(0,210,255,0.2); color: #4deaff;
+          font-size: 0.6rem; font-weight: 900; letter-spacing: 2px;
+          padding: 1px 7px; border-radius: 4px; margin-bottom: 3px; margin-right: 4px;
+        }
+        .emp-mobile { display: block; font-size: 0.7rem; color: rgba(255,255,255,0.3); font-weight: 500; }
+        .emp-unverified-badge {
+          display: inline-block; margin-top: 4px;
+          background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2);
+          color: #f59e0b; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.5px;
+          padding: 2px 8px; border-radius: 4px;
+        }
         .emp-email { display: block; font-size: 0.72rem; color: rgba(255,255,255,0.35); font-weight: 500; }
 
         .emp-designation { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.7); }
@@ -413,6 +457,7 @@ const Employees = () => {
           background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center;
           cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.4);
         }
+        .op-btn.view:hover { background: rgba(34,197,94,0.1); color: #22c55e; border-color: rgba(34,197,94,0.2); }
         .op-btn.edit:hover { background: rgba(0,210,255,0.1); color: #4deaff; border-color: rgba(0,210,255,0.2); }
         .op-btn.del:hover { background: rgba(239,68,68,0.1); color: #ef4444; border-color: rgba(239,68,68,0.2); }
 
@@ -431,8 +476,46 @@ const Employees = () => {
         .emp-spinner { width: 28px; height: 28px; border: 2px solid rgba(0,210,255,0.1); border-top-color: #4deaff; border-radius: 50%; animation: spin 1s infinite linear; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        @media (max-width: 900px) { .emp-form-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .emp-form-grid { grid-template-columns: 1fr; } .emp-title { font-size: 1.5rem; } }
+        @media (max-width: 900px) { 
+          .emp-form-grid { grid-template-columns: repeat(2, 1fr); } 
+        }
+        @media (max-width: 600px) { 
+          .emp-form-grid { grid-template-columns: 1fr; } 
+          .emp-title { font-size: 1.5rem; } 
+          .emp-header { flex-direction: column; align-items: stretch; }
+          .emp-add-btn { width: 100%; justify-content: center; }
+          .emp-search-row { flex-direction: column; align-items: stretch; gap: 8px; }
+          .emp-count-badge { text-align: right; }
+          
+          /* Table Stack on Mobile */
+          .emp-table-wrap { border: none; }
+          .emp-table thead { display: none; }
+          .emp-row { 
+            display: block; 
+            padding: 16px; 
+            margin-bottom: 12px; 
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+          }
+          .emp-row td { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 8px 0; 
+            border: none;
+            width: 100%;
+          }
+          .emp-row td:before {
+            content: attr(data-label);
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+          .emp-ops { width: 100%; justify-content: center; margin-top: 8px; pt: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+        }
       `}</style>
     </div>
   );

@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
+import { Download, Search, FileDown } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const AttendanceReport = () => {
   const [report, setReport] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState({
     startDate: new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
@@ -22,7 +26,7 @@ const AttendanceReport = () => {
         params: dateRange,
         headers: { Authorization: `Bearer ${token}` }
       });
-      setReport(response.data.report || []);
+      setReport(response.data.attendance || []);
     } catch (err) {
       console.error('Failed to fetch report', err);
     } finally {
@@ -40,26 +44,90 @@ const AttendanceReport = () => {
     return <span className={`report-badge ${badge.class}`}>{badge.label}</span>;
   };
 
+
+
+  const exportToPDF = () => {
+    if (report.length === 0) {
+      alert('No data to export');
+      return;
+    }
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.setTextColor(40);
+    doc.text('Personnel Attendance Logs', 14, 22);
+    
+    // Add subtitle
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Period: ${dateRange.startDate} to ${dateRange.endDate}`, 14, 30);
+    
+    // Auto format the table
+    autoTable(doc, {
+      startY: 35,
+      head: [['Employee', 'Email', 'Check-in Date', 'Check-in Time', 'Work Mode', 'Verified IP']],
+      body: report.map(log => [
+        log.employee_name,
+        log.email,
+        new Date(log.check_in).toLocaleDateString(),
+        new Date(log.check_in).toLocaleTimeString(),
+        log.attendance_type.toUpperCase().replace('_', ' '),
+        log.ip_address || '0.0.0.0'
+      ]),
+      theme: 'grid',
+      headStyles: { fillColor: [0, 86, 255] },
+      styles: { fontSize: 8 },
+    });
+    
+    doc.save(`attendance-report-${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const filteredReport = report.filter(log =>
+    (log.employee_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (log.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="report-hub">
-      <div className="hub-filters">
-        <div className="filter-group">
-          <label>Range Start</label>
-          <input 
-            type="date" 
-            className="glass-input small" 
-            value={dateRange.startDate}
-            onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
-          />
+      <div className="hub-controls">
+        <div className="hub-filters">
+          <div className="filter-group">
+            <label>Range Start</label>
+            <input
+              type="date"
+              className="date-input"
+              value={dateRange.startDate}
+              onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
+            />
+          </div>
+          <div className="filter-group">
+            <label>Range End</label>
+            <input
+              type="date"
+              className="date-input"
+              value={dateRange.endDate}
+              onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
+            />
+          </div>
         </div>
-        <div className="filter-group">
-          <label>Range End</label>
-          <input 
-            type="date" 
-            className="glass-input small" 
-            value={dateRange.endDate}
-            onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
-          />
+
+        <div className="hub-actions">
+          <div className="search-box">
+            <Search size={16} />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              className="search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <button className="export-btn pdf" onClick={exportToPDF}>
+            <FileDown size={16} />
+            <span>Export PDF</span>
+          </button>
         </div>
       </div>
 
@@ -76,25 +144,25 @@ const AttendanceReport = () => {
           <tbody>
             {loading ? (
               <tr><td colSpan="4" className="status-cell">Decrypting Logs...</td></tr>
-            ) : report.length === 0 ? (
+            ) : filteredReport.length === 0 ? (
               <tr><td colSpan="4" className="status-cell">No activity records found for this period</td></tr>
             ) : (
-              report.map((log, idx) => (
+              filteredReport.map((log, idx) => (
                 <tr key={idx} className="table-row">
-                  <td>
+                  <td data-label="Log Identity">
                     <div className="user-info">
                       <span className="name">{log.employee_name}</span>
                       <span className="email">{log.email}</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Timestamp">
                     <div className="time-info">
                        <span className="date">{new Date(log.check_in).toLocaleDateString()}</span>
                        <span className="time">{new Date(log.check_in).toLocaleTimeString()}</span>
                     </div>
                   </td>
-                  <td>{getStatusBadge(log.attendance_type)}</td>
-                  <td><code className="ip-addr">{log.ip_address || '0.0.0.0'}</code></td>
+                  <td data-label="Work Mode">{getStatusBadge(log.attendance_type)}</td>
+                  <td data-label="Verified IP"><code className="ip-addr">{log.ip_address || '0.0.0.0'}</code></td>
                 </tr>
               ))
             )}
@@ -104,10 +172,106 @@ const AttendanceReport = () => {
 
       <style jsx>{`
         .report-hub { width: 100%; }
-        .hub-filters { display: flex; gap: 20px; margin-bottom: 30px; }
+
+        .hub-controls { display: flex; flex-direction: column; gap: 24px; margin-bottom: 30px; }
+
+        .hub-filters { display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; }
         .filter-group { display: flex; flex-direction: column; gap: 8px; }
-        .filter-group label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-        .glass-input.small { padding: 8px 12px; font-size: 0.8rem; }
+        .filter-group label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+        .date-input {
+          padding: 12px 16px;
+          font-size: 0.85rem;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1.5px solid rgba(255, 255, 255, 0.15);
+          border-radius: 10px;
+          color: #fff;
+          transition: all 0.3s ease;
+          font-family: inherit;
+          cursor: pointer;
+        }
+
+        .date-input:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .date-input:focus {
+          outline: none;
+          background: rgba(255, 255, 255, 0.15);
+          border-color: rgba(77, 234, 255, 0.5);
+          box-shadow: 0 0 15px rgba(77, 234, 255, 0.1);
+        }
+
+        .hub-actions { display: flex; gap: 16px; align-items: center; }
+
+        .search-box {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 16px;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1.5px solid rgba(255, 255, 255, 0.15);
+          border-radius: 10px;
+          transition: all 0.3s ease;
+          min-width: 250px;
+        }
+
+        .search-box:focus-within {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: 0 0 15px rgba(77, 234, 255, 0.1);
+        }
+
+        .search-input {
+          background: none;
+          border: none;
+          color: #fff;
+          font-size: 0.85rem;
+          outline: none;
+          width: 100%;
+          font-family: inherit;
+        }
+
+        .search-input::placeholder {
+          color: rgba(255, 255, 255, 0.4);
+        }
+
+        .export-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 18px;
+          background: linear-gradient(135deg, rgba(77, 234, 255, 0.15), rgba(77, 234, 255, 0.05));
+          border: 1.5px solid rgba(77, 234, 255, 0.3);
+          border-radius: 10px;
+          color: #4deaff;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          white-space: nowrap;
+        }
+
+        .export-btn:hover {
+          background: linear-gradient(135deg, rgba(77, 234, 255, 0.25), rgba(77, 234, 255, 0.1));
+          border-color: rgba(77, 234, 255, 0.5);
+          box-shadow: 0 8px 24px rgba(77, 234, 255, 0.15);
+          transform: translateY(-2px);
+        }
+        
+        .export-btn.pdf {
+          color: #ef4444;
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+          border: 1.5px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .export-btn.pdf:hover {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.1));
+          border-color: rgba(239, 68, 68, 0.5);
+          box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
+        }
+
         .premium-table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 15px; font-size: 0.7rem; color: var(--text-muted); border-bottom: 1px solid var(--glass-border); }
         .table-row { border-bottom: 1px solid var(--glass-border); transition: var(--transition); }
@@ -125,6 +289,43 @@ const AttendanceReport = () => {
         .badge-home { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
         .badge-leave { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
         .ip-addr { font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); padding: 2px 6px; border-radius: 4px; }
+
+        .table-responsive { overflow-x: auto; }
+
+        @media (max-width: 768px) {
+          .hub-controls { gap: 16px; }
+          .hub-filters { flex-direction: column; align-items: stretch; gap: 12px; }
+          .hub-actions { flex-direction: column; width: 100%; }
+          .search-box { min-width: 100%; }
+          .export-btn { width: 100%; justify-content: center; }
+
+          /* Table Stack */
+          .premium-table thead { display: none; }
+          .table-row { 
+            display: block; 
+            padding: 16px; 
+            margin-bottom: 12px; 
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+          }
+          .table-row td { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 8px 0; 
+            border: none;
+            width: 100%;
+          }
+          .table-row td:before {
+            content: attr(data-label);
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+        }
       `}</style>
     </div>
   );

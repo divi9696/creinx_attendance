@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AttendanceReport from '../components/AttendanceReport';
-import AttendanceAnalytics from '../components/AttendanceAnalytics';
 import { motion } from 'framer-motion';
-import { FileText, Activity, RefreshCcw, Download } from 'lucide-react';
+import { FileText, RefreshCcw, Download } from 'lucide-react';
 
 const Reports = () => {
-  const [refreshKey, setRefreshKey] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => { setRefreshKey(prev => prev + 1); }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);
-    setRefreshKey(k => k + 1);
     setTimeout(() => setRefreshing(false), 1000);
   };
 
@@ -22,25 +17,14 @@ const Reports = () => {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rpt-header">
         <div>
           <h1 className="rpt-title">Archive & Logs</h1>
-          <p className="rpt-sub">Attendance analytics, filtered logs, and statistical distribution</p>
+          <p className="rpt-sub">View detailed attendance logs and employee activity records</p>
         </div>
         <div className="rpt-actions">
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => window.print()} className="rpt-btn secondary">
-            <Download size={16} /><span>Export PDF</span>
-          </motion.button>
+
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleRefresh} className="rpt-btn primary">
             <RefreshCcw size={16} className={refreshing ? 'spin' : ''} /><span>Sync Data</span>
           </motion.button>
         </div>
-      </motion.div>
-
-      {/* ─── Analytics Chart ─── */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rpt-card">
-        <div className="rpt-card-header">
-          <div className="rpt-card-title"><Activity size={18} /><h3>Statistical Distribution</h3></div>
-          <div className="rpt-live-dot"></div>
-        </div>
-        <AttendanceAnalytics key={refreshKey} />
       </motion.div>
 
       {/* ─── Detailed Logs ─── */}
@@ -76,16 +60,18 @@ const Reports = () => {
         .rpt-card-title { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.5); }
         .rpt-card-title h3 { font-size: 1rem; font-weight: 800; color: #fff; }
 
-        .rpt-live-dot { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; animation: pulse 2s infinite; }
-
         .spin { animation: spin 1s infinite linear; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-        @media print {
-          .rpt-header, .rpt-actions { display: none; }
-          .rpt-card { border: none; padding: 0; }
+        @media (max-width: 600px) {
+          .rpt-title { font-size: 1.5rem; }
+          .rpt-header { flex-direction: column; align-items: stretch; }
+          .rpt-actions { flex-direction: column; width: 100%; }
+          .rpt-btn { width: 100%; justify-content: center; }
+          .rpt-card { padding: 16px; }
         }
+
+        @media print { }
       `}</style>
     </div>
   );

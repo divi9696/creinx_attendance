@@ -262,13 +262,20 @@
 @media (max-width: 480px) {
   .login-card-layered {
     width: 90vw !important;
-    padding: 35px 25px !important;
+    padding: 30px 20px !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    border-radius: 24px;
   }
   
   .login-universe {
-    padding: 20px;
+    padding: 20px 16px;
   }
+
+  .logo-main { width: 140px; }
+  .auth-label { font-size: 0.55rem; letter-spacing: 2px; }
+  .input-field input { height: 50px; font-size: 0.85rem; padding: 0 44px; }
+  .field-icon { left: 14px; }
+  .login-submit-premium { height: 50px; font-size: 0.8rem; }
 
   .float-obj {
     display: none; /* Hide expensive parallax on mobile */

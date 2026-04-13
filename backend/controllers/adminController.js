@@ -1,6 +1,8 @@
 const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
 const LeaveRequest = require('../models/LeaveRequest');
+const OTP = require('../models/OTP');
+const emailService = require('../utils/emailService');
 const bcrypt = require('bcryptjs');
 
 exports.getDashboard = async (req, res) => {
@@ -108,37 +110,45 @@ exports.getEmployeeAttendance = async (req, res) => {
 
 exports.createEmployee = async (req, res) => {
   try {
-    const { name, email, job_role, date_of_join, department } = req.body;
+    const { name, email, mobile, job_role, date_of_join, department, role } = req.body;
 
     if (!name || !email) {
       return res.status(400).json({ error: 'Name and email are required' });
     }
+    if (!mobile) {
+      return res.status(400).json({ error: 'Mobile number is required' });
+    }
 
     const existingEmployee = await Employee.findByEmail(email);
     if (existingEmployee) {
-      return res.status(400).json({ error: 'Email already exists' });
+      return res.status(400).json({ error: 'Email already registered in the system' });
     }
 
-    const defaultPassword = 'creinx123';
-    const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
+    // Temporary placeholder password (employee sets it via OTP activation)
+    const placeholderPassword = bcrypt.hashSync(Math.random().toString(36), 10);
 
-    const employeeData = {
-      name,
-      email,
-      password: hashedPassword,
-      job_role,
-      date_of_join,
-      department,
-      role: 'employee'
-    };
+    const employeeData = { name, email, mobile, job_role, date_of_join, department, password: placeholderPassword, role: role || 'employee' };
+    const { insertId: employeeId, uid: employee_uid } = await Employee.create(employeeData);
 
-    const employeeId = await Employee.create(employeeData);
+    // Send Welcome Email with Employee ID
+    let emailSent = false;
+    try {
+      await emailService.sendWelcomeIDEmail(email, name, employee_uid);
+      emailSent = true;
+    } catch (emailErr) {
+      console.error('Failed to send welcome email:', emailErr.message);
+    }
+
     const newEmployee = await Employee.findById(employeeId);
     const { password: _, ...employeeWithoutPassword } = newEmployee;
 
     res.status(201).json({
-      message: 'Employee created successfully. Default password is: creinx123',
-      employee: employeeWithoutPassword
+      message: emailSent
+        ? `Employee created. Welcome email with Employee ID sent to ${email}.`
+        : `Employee created (Employee ID: ${employee_uid}). Email could not be sent.`,
+      employee: employeeWithoutPassword,
+      employee_uid,
+      emailSent
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -148,7 +158,7 @@ exports.createEmployee = async (req, res) => {
 exports.updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, job_role, date_of_join, department, role } = req.body;
+    const { name, email, mobile, job_role, date_of_join, department, role } = req.body;
 
     const employee = await Employee.findById(id);
     if (!employee) {
@@ -156,22 +166,20 @@ exports.updateEmployee = async (req, res) => {
     }
 
     const employeeData = {
-      name: name || employee.name,
-      email: email || employee.email,
-      job_role: job_role || employee.job_role,
-      date_of_join: date_of_join || employee.date_of_join,
-      department: department || employee.department,
-      role: role || employee.role
+      name:        name        || employee.name,
+      email:       email       || employee.email,
+      mobile:      mobile      || employee.mobile,
+      job_role:    job_role    || employee.job_role,
+      date_of_join:date_of_join|| employee.date_of_join,
+      department:  department  || employee.department,
+      role:        role        || employee.role
     };
 
     await Employee.update(id, employeeData);
     const updatedEmployee = await Employee.findById(id);
     const { password: _, ...rest } = updatedEmployee;
 
-    res.json({
-      message: 'Employee updated successfully',
-      employee: rest
-    });
+    res.json({ message: 'Employee updated successfully', employee: rest });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
-import AttendanceAnalytics from '../components/AttendanceAnalytics';
+
 import AdminStaffPanel from '../components/AdminStaffPanel';
-import { motion } from 'framer-motion';
-import { Users, CheckCircle2, Building2, Home, Activity, RefreshCcw } from 'lucide-react';
+import AttendanceForm from '../components/AttendanceForm';
+import LeaveRequestForm from '../components/LeaveRequestForm';
+import LeaveStatusWidget from '../components/LeaveStatusWidget';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Users, CheckCircle2, Building2, Home, Activity, RefreshCcw, Clock, Calendar, MessageSquare, Briefcase } from 'lucide-react';
 
 const Dashboards = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState('intelligence');
+  const [workspaceRefreshKey, setWorkspaceRefreshKey] = useState(0);
 
   useEffect(() => { fetchDashboardData(); }, []);
 
@@ -59,6 +64,9 @@ const Dashboards = () => {
     },
   ];
 
+  const handleAttendanceSuccess = () => setWorkspaceRefreshKey(prev => prev + 1);
+  const handleLeaveSuccess = () => setWorkspaceRefreshKey(prev => prev + 1);
+
   return (
     <div className="adm-page">
 
@@ -84,7 +92,26 @@ const Dashboards = () => {
         </motion.button>
       </motion.div>
 
-      {/* ─── Stat Cards ─── */}
+      {/* ─── Admin Tabs ─── */}
+      <div className="emp-tabs" style={{ marginBottom: '28px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px', display: 'flex', gap: '8px' }}>
+        <button
+          className={`emp-tab ${activeTab === 'intelligence' ? 'active' : ''}`}
+          onClick={() => setActiveTab('intelligence')}
+        >
+          <Activity size={15} /> Intelligence Hub
+        </button>
+        <button
+          className={`emp-tab ${activeTab === 'workspace' ? 'active' : ''}`}
+          onClick={() => setActiveTab('workspace')}
+        >
+          <Briefcase size={15} /> Personal Workspace
+        </button>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {activeTab === 'intelligence' ? (
+          <motion.div key="intelligence" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            {/* ─── Stat Cards ─── */}
       <div className="adm-stats-grid">
         {stats.map((stat, idx) => (
           <motion.div
@@ -107,22 +134,7 @@ const Dashboards = () => {
         ))}
       </div>
 
-      {/* ─── Analytics ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="adm-section-card"
-      >
-        <div className="adm-card-header">
-          <div className="adm-card-title">
-            <Activity size={18} />
-            <h3>Attendance Distribution</h3>
-          </div>
-          <div className="adm-live-badge">LIVE</div>
-        </div>
-        <AttendanceAnalytics />
-      </motion.div>
+
 
       {/* ─── Full Oversight Panel ─── */}
       <motion.div
@@ -132,6 +144,45 @@ const Dashboards = () => {
       >
         <AdminStaffPanel />
       </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div key="workspace" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="emp-grid">
+            <div className="emp-left" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <motion.div className="emp-card adm-section-card">
+                <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div className="adm-card-title">
+                    <Clock size={18} color="#4deaff" />
+                    <h3>Daily Attendance</h3>
+                  </div>
+                </div>
+                <AttendanceForm onSuccess={handleAttendanceSuccess} />
+              </motion.div>
+
+              <motion.div className="emp-card adm-section-card">
+                <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div className="adm-card-title">
+                    <Calendar size={18} color="#a855f7" />
+                    <h3>Request Leave</h3>
+                  </div>
+                </div>
+                <LeaveRequestForm onSuccess={handleLeaveSuccess} />
+              </motion.div>
+            </div>
+
+            <aside className="emp-right" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <motion.div className="emp-card adm-section-card">
+                <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div className="adm-card-title">
+                    <MessageSquare size={18} color="#22c55e" />
+                    <h3>My Leave Requests</h3>
+                  </div>
+                </div>
+                <LeaveStatusWidget key={workspaceRefreshKey} />
+              </motion.div>
+            </aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style jsx>{`
         .adm-page { width: 100%; display: flex; flex-direction: column; gap: 28px; }
@@ -219,10 +270,36 @@ const Dashboards = () => {
         .adm-loading { height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: rgba(255,255,255,0.4); font-weight: 600; }
         .adm-spinner { width: 28px; height: 28px; border: 2px solid rgba(0,210,255,0.1); border-top-color: #4deaff; border-radius: 50%; animation: spin 1s infinite linear; }
 
+        .emp-tab {
+          display: flex; align-items: center; gap: 7px;
+          padding: 9px 18px; border-radius: 12px; border: 1px solid transparent;
+          font-size: 0.82rem; font-weight: 700; cursor: pointer;
+          color: rgba(255,255,255,0.4); background: transparent;
+          transition: all 0.2s; font-family: 'Outfit', sans-serif;
+        }
+        .emp-tab:hover { color: #fff; background: rgba(255,255,255,0.04); }
+        .emp-tab.active { color: #fff; background: rgba(0,210,255,0.08); border-color: rgba(0,210,255,0.2); }
+
+        .emp-grid {
+          display: grid;
+          grid-template-columns: 1fr 380px;
+          gap: 24px;
+          align-items: start;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        @media (max-width: 1100px) { .adm-stats-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .adm-stats-grid { grid-template-columns: 1fr 1fr; } .adm-title { font-size: 1.5rem; } }
+        @media (max-width: 1100px) { .adm-stats-grid { grid-template-columns: repeat(2, 1fr); } .emp-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { 
+          .adm-stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; } 
+          .adm-stat-card { padding: 16px; gap: 12px; flex-direction: column; text-align: center; justify-content: center; } 
+          .adm-stat-icon { width: 44px; height: 44px; }
+          .adm-stat-num { font-size: 1.5rem; }
+          .adm-title { font-size: 1.5rem; } 
+        }
+        @media (max-width: 400px) {
+          .adm-stats-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
     </div>
   );

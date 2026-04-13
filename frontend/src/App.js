@@ -3,10 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import AppLayout from './components/AppLayout';
 import ChangePassword from './components/ChangePassword';
 import Login from './pages/Login';
+import OTPAuthPage from './pages/OTPAuthPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import Dashboards from './pages/Dashboards';
 import Employees from './pages/Employees';
 import Reports from './pages/Reports';
+import Notifications from './pages/Notifications';
+
 import './styles/App.css';
 
 function AppContent({ user, loading, onLoginSuccess, onPasswordChanged, onLogout }) {
@@ -44,6 +47,8 @@ function AppContent({ user, loading, onLoginSuccess, onPasswordChanged, onLogout
     return (
       <Routes>
         <Route path="/login" element={<Login onLoginSuccess={onLoginSuccess} />} />
+        <Route path="/activate" element={<OTPAuthPage />} />
+        <Route path="/forgot-password" element={<OTPAuthPage />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     );
@@ -78,6 +83,11 @@ function AppContent({ user, loading, onLoginSuccess, onPasswordChanged, onLogout
           path="/change-password"
           element={<ChangePassword user={user} onPasswordChanged={onPasswordChanged} isManual={true} />}
         />
+        <Route
+          path="/notifications"
+          element={<Notifications user={user} />}
+        />
+
         <Route
           path="/"
           element={<Navigate to={user.role === 'admin' ? '/admin/dashboards' : '/employee/dashboard'} />}

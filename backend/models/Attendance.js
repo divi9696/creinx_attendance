@@ -45,6 +45,13 @@ class Attendance {
     return rows;
   }
 
+  static async getByDateRange(employeeId, startDate, endDate) {
+    const [rows] = await db.query(
+      `SELECT * FROM attendance WHERE employee_id = ${parseInt(employeeId)} AND DATE(check_in) BETWEEN '${startDate}' AND '${endDate}' ORDER BY check_in DESC`
+    );
+    return rows;
+  }
+
   static async getByType(employeeId, type, limit = 30) {
     const [rows] = await db.query(
       `SELECT * FROM attendance WHERE employee_id = ${parseInt(employeeId)} AND attendance_type = '${type}' ORDER BY check_in DESC LIMIT ${parseInt(limit)}`
@@ -54,7 +61,10 @@ class Attendance {
 
   static async getReport(startDate, endDate) {
     const [rows] = await db.query(
-      `SELECT * FROM attendance WHERE check_in BETWEEN '${startDate}' AND '${endDate}'`
+      `SELECT a.*, e.name as employee_name, e.email 
+       FROM attendance a 
+       JOIN employees e ON a.employee_id = e.id 
+       WHERE a.check_in BETWEEN '${startDate}' AND '${endDate} 23:59:59'`
     );
     return rows;
   }
