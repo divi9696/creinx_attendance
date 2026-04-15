@@ -40,16 +40,26 @@ const AttendanceForm = ({ onSuccess }) => {
       });
       const now = new Date();
       const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-      const approvedLeaveToday = response.data.leaves?.some(leave =>
+      
+      const activeLeave = response.data.leaves?.find(leave =>
         leave.status === 'approved' && leave.start_date <= today && leave.end_date >= today
       );
-      setHasApprovedLeave(approvedLeaveToday || false);
+
+      if (activeLeave) {
+        setHasApprovedLeave(true);
+        // Automatically pre-set the leaveId in state if it exists
+        setAttendanceType(prev => ({ ...prev, leaveId: activeLeave.id }));
+      } else {
+        setHasApprovedLeave(false);
+      }
     } catch (err) {
       console.error('Error checking leave status:', err);
     }
   };
 
-  const handleAttendanceTypeSelect = (type) => setAttendanceType(type);
+  const handleAttendanceTypeSelect = (type) => {
+    setAttendanceType(prev => ({ ...prev, type }));
+  };
 
   const handleMarkAttendance = async () => {
     setLoading(true);

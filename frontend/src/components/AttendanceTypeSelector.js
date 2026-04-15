@@ -5,7 +5,7 @@ const AttendanceTypeSelector = ({ onTypeSelect, hasApprovedLeave }) => {
 
   const handleTypeChange = (type) => {
     setSelectedType(type);
-    onTypeSelect({ type, leaveId: null }); // leaveId logic simplified for now
+    onTypeSelect(type); 
   };
 
   const types = [
