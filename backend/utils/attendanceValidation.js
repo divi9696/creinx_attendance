@@ -1,7 +1,7 @@
 const geoUtils = require('./geoUtils');
 const LeaveRequest = require('../models/LeaveRequest');
 
-exports.validateAttendanceType = (type, userData, locationData = null, leaveRequestId = null) => {
+exports.validateAttendanceType = async (type, userData, locationData = null, leaveRequestId = null) => {
   try {
     if (type === 'work_office') {
       if (!locationData || !locationData.latitude || !locationData.longitude) {
@@ -37,7 +37,7 @@ exports.validateAttendanceType = (type, userData, locationData = null, leaveRequ
         return { valid: false, error: 'Leave request ID is required' };
       }
 
-      const leave = LeaveRequest.findById(leaveRequestId);
+      const leave = await LeaveRequest.findById(leaveRequestId);
       if (!leave) {
         return { valid: false, error: 'Leave request not found' };
       }

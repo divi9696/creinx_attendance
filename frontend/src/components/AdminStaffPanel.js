@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Clock, Calendar, CheckCircle, XCircle,
   ChevronDown, ChevronUp, Loader2, AlertTriangle,
-  Building, Home, FileText, BarChart2, Check, X
+  Building, Home, FileText, BarChart2, Check, X, ShieldAlert
 } from 'lucide-react';
 
 const AdminStaffPanel = () => {
@@ -15,9 +15,14 @@ const AdminStaffPanel = () => {
   const [dossier, setDossier] = useState(null);
   const [dossierLoading, setDossierLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('attendance');
+  const [showAllLogs, setShowAllLogs] = useState(false);
   const [liveToday, setLiveToday] = useState([]);
   const [pendingLeaves, setPendingLeaves] = useState([]);
   const [reviewMsg, setReviewMsg] = useState('');
+  const [latePermEmpId, setLatePermEmpId] = useState('');
+  const [latePermReason, setLatePermReason] = useState('');
+  const [latePermMsg, setLatePermMsg] = useState({ text: '', type: '' });
+  const [latePermLoading, setLatePermLoading] = useState(false);
 
   useEffect(() => {
     fetchEmployees();
@@ -58,6 +63,7 @@ const AdminStaffPanel = () => {
     setSelectedEmp(emp);
     setDossierLoading(true);
     setDossier(null);
+    setShowAllLogs(false);
     try {
       const res = await axios.get(`${API_URL}/admin/employee/${emp.id}/full-report`, { headers: headers() });
       setDossier(res.data);
@@ -73,6 +79,28 @@ const AdminStaffPanel = () => {
       if (dossier) fetchDossier(selectedEmp);
       setTimeout(() => setReviewMsg(''), 3000);
     } catch (e) { setReviewMsg('Review action failed'); }
+  };
+
+  const grantLatePermission = async () => {
+    if (!latePermEmpId) {
+      setLatePermMsg({ text: 'Please select an employee.', type: 'error' });
+      return;
+    }
+    setLatePermLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}/admin/late-permission`,
+        { employee_id: parseInt(latePermEmpId), reason: latePermReason || 'Admin override' },
+        { headers: headers() }
+      );
+      setLatePermMsg({ text: res.data.message, type: 'success' });
+      setLatePermEmpId('');
+      setLatePermReason('');
+    } catch (e) {
+      setLatePermMsg({ text: e.response?.data?.error || 'Failed to grant permission', type: 'error' });
+    } finally {
+      setLatePermLoading(false);
+      setTimeout(() => setLatePermMsg({ text: '', type: '' }), 4000);
+    }
   };
 
   const fmt = (dt) => {
@@ -219,6 +247,53 @@ const AdminStaffPanel = () => {
         )}
       </div>
 
+      {/* === GRANT LATE PERMISSION SECTION === */}
+      <div className="panel-section">
+        <div className="section-title-row">
+          <div className="section-icon-box" style={{ background: 'rgba(251,191,36,0.08)', color: '#fbbf24' }}><ShieldAlert size={18} /></div>
+          <h3>Grant Late Check-In Permission</h3>
+        </div>
+        <p className="late-perm-desc">If an employee arrives late, grant them a one-time attendance override for today. They must use it immediately.</p>
+
+        <AnimatePresence>
+          {latePermMsg.text && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className={`late-perm-toast ${latePermMsg.type}`}>
+              {latePermMsg.type === 'success' ? <CheckCircle size={14} /> : <AlertTriangle size={14} />}
+              {latePermMsg.text}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="late-perm-form">
+          <select
+            className="late-perm-select"
+            value={latePermEmpId}
+            onChange={e => setLatePermEmpId(e.target.value)}
+          >
+            <option value="">— Select Employee —</option>
+            {employees.filter(e => e.role === 'employee').map(emp => (
+              <option key={emp.id} value={emp.id}>{emp.name} ({emp.employee_uid})</option>
+            ))}
+          </select>
+          <input
+            className="late-perm-input"
+            placeholder="Reason (optional)"
+            value={latePermReason}
+            onChange={e => setLatePermReason(e.target.value)}
+          />
+          <motion.button
+            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+            onClick={grantLatePermission}
+            disabled={latePermLoading}
+            className="late-perm-btn"
+          >
+            {latePermLoading ? <Loader2 size={16} className="spinner-icon" /> : <ShieldAlert size={16} />}
+            Grant Late Access
+          </motion.button>
+        </div>
+      </div>
+
       {/* === EMPLOYEE DOSSIER ACCESS === */}
       <div className="panel-section">
         <div className="section-title-row">
@@ -285,7 +360,10 @@ const AdminStaffPanel = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {(dossier.attendance || []).slice(0, 60).map((rec, i) => {
+                                {(showAllLogs 
+                                  ? (dossier.attendance || []) 
+                                  : (dossier.attendance || []).slice(0, 5)
+                                ).map((rec, i) => {
                                   const hours = rec.check_out
                                     ? ((new Date(rec.check_out) - new Date(rec.check_in)) / 3600000).toFixed(1)
                                     : null;
@@ -306,6 +384,20 @@ const AdminStaffPanel = () => {
                               </tbody>
                             </table>
                             {dossier.attendance?.length === 0 && <div className="empty-state">No attendance records found.</div>}
+                            {!showAllLogs && dossier.attendance?.length > 5 && (
+                              <div className="view-more-container">
+                                <button onClick={() => setShowAllLogs(true)} className="view-more-btn">
+                                  View More <ChevronDown size={14} />
+                                </button>
+                              </div>
+                            )}
+                            {showAllLogs && dossier.attendance?.length > 5 && (
+                              <div className="view-more-container">
+                                <button onClick={() => setShowAllLogs(false)} className="view-more-btn">
+                                  View Less <ChevronUp size={14} />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         )}
 
@@ -511,6 +603,30 @@ const AdminStaffPanel = () => {
         .t-na { color: #475569; }
         .t-type { display: flex; align-items: center; gap: 5px; font-weight: 700; }
 
+        .view-more-container {
+          display: flex;
+          justify-content: center;
+          margin-top: 15px;
+          padding-bottom: 10px;
+        }
+        .view-more-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(0, 210, 255, 0.08);
+          color: #4deaff;
+          border: 1px solid rgba(0, 210, 255, 0.2);
+          padding: 8px 24px;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 800;
+          cursor: pointer;
+          transition: 0.3s;
+        }
+        .view-more-btn:hover {
+          background: rgba(0, 210, 255, 0.15);
+        }
+
         /* Monthly */
         .monthly-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; }
         .month-card {
@@ -538,6 +654,37 @@ const AdminStaffPanel = () => {
         .lv-decline { color: #ef4444 !important; font-size: 0.72rem !important; }
 
         .empty-state { padding: 30px; text-align: center; color: var(--text-muted); font-size: 0.85rem; font-style: italic; }
+
+        /* Late Permission */
+        .late-perm-desc { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 18px; line-height: 1.6; margin-top: -10px; }
+        .late-perm-toast {
+          display: flex; align-items: center; gap: 8px;
+          padding: 10px 18px; border-radius: 10px;
+          font-size: 0.8rem; font-weight: 700; margin-bottom: 16px;
+        }
+        .late-perm-toast.success { background: rgba(34,197,94,0.1); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
+        .late-perm-toast.error { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+        .late-perm-form { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+        .late-perm-select, .late-perm-input {
+          flex: 1; min-width: 180px; height: 44px;
+          background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px; padding: 0 14px;
+          color: #fff; font-size: 0.85rem; font-family: 'Outfit', sans-serif;
+          outline: none; transition: border-color 0.2s;
+        }
+        .late-perm-select:focus, .late-perm-input:focus { border-color: #fbbf24; }
+        .late-perm-select option { background: #0a0c14; }
+        .late-perm-input::placeholder { color: rgba(255,255,255,0.25); }
+        .late-perm-btn {
+          display: flex; align-items: center; gap: 8px;
+          background: rgba(251,191,36,0.12); color: #fbbf24;
+          border: 1px solid rgba(251,191,36,0.25); border-radius: 12px;
+          padding: 0 22px; height: 44px;
+          font-size: 0.8rem; font-weight: 800; letter-spacing: 0.5px;
+          cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .late-perm-btn:hover { background: rgba(251,191,36,0.2); box-shadow: 0 6px 16px rgba(251,191,36,0.15); }
+        .late-perm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .spinner-icon { animation: spin 1s infinite linear; }
         @keyframes spin { to { transform: rotate(360deg); } }

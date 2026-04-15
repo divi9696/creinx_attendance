@@ -106,11 +106,17 @@ const Dashboards = () => {
         >
           <Briefcase size={15} /> Personal Workspace
         </button>
+        <button
+          className={`emp-tab ${activeTab === 'leave' ? 'active' : ''}`}
+          onClick={() => setActiveTab('leave')}
+        >
+          <Calendar size={15} /> My Leave Requests
+        </button>
       </div>
 
       <AnimatePresence mode="wait">
         {activeTab === 'intelligence' ? (
-          <motion.div key="intelligence" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+          <motion.div key="intelligence" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="adm-column">
             {/* ─── Stat Cards ─── */}
       <div className="adm-stats-grid">
         {stats.map((stat, idx) => (
@@ -134,8 +140,6 @@ const Dashboards = () => {
         ))}
       </div>
 
-
-
       {/* ─── Full Oversight Panel ─── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -145,41 +149,39 @@ const Dashboards = () => {
         <AdminStaffPanel />
       </motion.div>
           </motion.div>
+        ) : activeTab === 'leave' ? (
+          <motion.div key="leave" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="adm-column">
+            <motion.div className="emp-card adm-section-card">
+              <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="adm-card-title">
+                  <Calendar size={18} color="#a855f7" />
+                  <h3>Request Leave</h3>
+                </div>
+              </div>
+              <LeaveRequestForm onSuccess={handleLeaveSuccess} />
+            </motion.div>
+
+            <motion.div className="emp-card adm-section-card">
+              <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="adm-card-title">
+                  <MessageSquare size={18} color="#22c55e" />
+                  <h3>My Leave Requests</h3>
+                </div>
+              </div>
+              <LeaveStatusWidget key={workspaceRefreshKey} />
+            </motion.div>
+          </motion.div>
         ) : (
-          <motion.div key="workspace" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="emp-grid">
-            <div className="emp-left" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <motion.div className="emp-card adm-section-card">
-                <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="adm-card-title">
-                    <Clock size={18} color="#4deaff" />
-                    <h3>Daily Attendance</h3>
-                  </div>
+          <motion.div key="workspace" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="emp-grid-single-admin">
+            <motion.div className="emp-card adm-section-card">
+              <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="adm-card-title">
+                  <Clock size={18} color="#4deaff" />
+                  <h3>Daily Attendance</h3>
                 </div>
-                <AttendanceForm onSuccess={handleAttendanceSuccess} />
-              </motion.div>
-
-              <motion.div className="emp-card adm-section-card">
-                <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="adm-card-title">
-                    <Calendar size={18} color="#a855f7" />
-                    <h3>Request Leave</h3>
-                  </div>
-                </div>
-                <LeaveRequestForm onSuccess={handleLeaveSuccess} />
-              </motion.div>
-            </div>
-
-            <aside className="emp-right" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <motion.div className="emp-card adm-section-card">
-                <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="adm-card-title">
-                    <MessageSquare size={18} color="#22c55e" />
-                    <h3>My Leave Requests</h3>
-                  </div>
-                </div>
-                <LeaveStatusWidget key={workspaceRefreshKey} />
-              </motion.div>
-            </aside>
+              </div>
+              <AttendanceForm onSuccess={handleAttendanceSuccess} />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -248,12 +250,12 @@ const Dashboards = () => {
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.07);
           border-radius: 20px;
-          padding: 28px;
+          padding: 24px;
         }
 
         .adm-card-header {
           display: flex; justify-content: space-between; align-items: center;
-          margin-bottom: 24px; padding-bottom: 16px;
+          margin-bottom: 20px; padding-bottom: 16px;
           border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
@@ -282,9 +284,28 @@ const Dashboards = () => {
 
         .emp-grid {
           display: grid;
-          grid-template-columns: 1fr 380px;
+          grid-template-columns: 1fr 1fr;
           gap: 24px;
           align-items: start;
+        }
+
+        .emp-grid-single-admin {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          width: 100%;
+        }
+
+        .adm-column {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .emp-left, .emp-right {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }

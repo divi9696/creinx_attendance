@@ -102,10 +102,26 @@ const initializeDatabase = async () => {
       )
     `);
 
+    // Create late_permissions table (admin grants late check-in access)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS late_permissions (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        employee_id INT NOT NULL,
+        granted_by INT NOT NULL,
+        permission_date DATE NOT NULL,
+        reason VARCHAR(255),
+        used TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+        FOREIGN KEY (granted_by) REFERENCES employees(id) ON DELETE CASCADE
+      )
+    `);
+
     // Indexes (safe — ignored if exist)
     try { await db.query('CREATE INDEX idx_leave_status ON leave_requests(status)'); } catch (e) {}
     try { await db.query('CREATE INDEX idx_attendance_check_in ON attendance(check_in)'); } catch (e) {}
     try { await db.query('CREATE INDEX idx_otp_employee ON otp_tokens(employee_id, type)'); } catch (e) {}
+    try { await db.query('CREATE INDEX idx_late_perm_date ON late_permissions(employee_id, permission_date)'); } catch (e) {}
 
     console.log('✓ Database tables created/verified');
   } catch (error) {

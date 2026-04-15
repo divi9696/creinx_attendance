@@ -20,7 +20,6 @@ const Reports = () => {
           <p className="rpt-sub">View detailed attendance logs and employee activity records</p>
         </div>
         <div className="rpt-actions">
-
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleRefresh} className="rpt-btn primary">
             <RefreshCcw size={16} className={refreshing ? 'spin' : ''} /><span>Sync Data</span>
           </motion.button>
@@ -63,15 +62,10 @@ const Reports = () => {
         .spin { animation: spin 1s infinite linear; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        @media (max-width: 600px) {
-          .rpt-title { font-size: 1.5rem; }
-          .rpt-header { flex-direction: column; align-items: stretch; }
-          .rpt-actions { flex-direction: column; width: 100%; }
-          .rpt-btn { width: 100%; justify-content: center; }
-          .rpt-card { padding: 16px; }
+        @media print {
+          .rpt-header, .rpt-actions { display: none; }
+          .rpt-card { border: none; padding: 0; }
         }
-
-        @media print { }
       `}</style>
     </div>
   );

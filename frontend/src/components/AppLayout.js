@@ -14,19 +14,22 @@ const AppLayout = ({ user, onLogout, children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [unreadAnnouncement, setUnreadAnnouncement] = useState(null);
+  const settingsRef = React.useRef(null);
 
-  // Auto-close settings when navigating or clicking elsewhere
+  // Close settings when route changes
   React.useEffect(() => {
     setShowSettings(false);
   }, [location.pathname]);
 
+  // Close settings when clicking outside
   React.useEffect(() => {
-    if (!showSettings) return;
-    const clickHandler = (e) => {
-      if (!e.target.closest('.settings-menu-wrapper')) setShowSettings(false);
+    const handleClickOutside = (e) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
+        setShowSettings(false);
+      }
     };
-    document.addEventListener('click', clickHandler);
-    return () => document.removeEventListener('click', clickHandler);
+    if (showSettings) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showSettings]);
 
   React.useEffect(() => {
@@ -65,7 +68,7 @@ const AppLayout = ({ user, onLogout, children }) => {
 
   const adminNav = [
     { to: '/admin/dashboards', icon: <LayoutDashboard size={20} />, label: 'Intelligence Hub' },
-    { to: '/admin/employees', icon: <Users size={20} />, label: 'Staff Directory' },
+    { to: '/admin/employees', icon: <Users size={20} />, label: 'Staff Management' },
     { to: '/admin/reports', icon: <FileBarChart2 size={20} />, label: 'Archive & Logs' },
     { to: '/notifications', icon: <Bell size={20} />, label: 'Announcements' },
   ];
@@ -181,7 +184,7 @@ const AppLayout = ({ user, onLogout, children }) => {
             </AnimatePresence>
 
             {/* Settings Dropdown Button */}
-            <div className="settings-menu-wrapper">
+            <div className="settings-menu-wrapper" ref={settingsRef}>
               <motion.button
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.9 }}
@@ -291,13 +294,12 @@ const AppLayout = ({ user, onLogout, children }) => {
       </main>
 
       <style jsx>{`
-        * { box-sizing: border-box; }
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap');
 
         .app-shell {
           display: flex;
           min-height: 100vh;
-          width: 100vw;
+          width: 100%;
           background: #070810;
           color: #fff;
           font-family: 'Outfit', sans-serif;
@@ -350,8 +352,8 @@ const AppLayout = ({ user, onLogout, children }) => {
         /* ─── Role Badge ─── */
         .role-badge-wrap { padding: 0 16px 14px; }
         .role-badge {
-          font-size: 0.6rem; font-weight: 900; letter-spacing: 1px;
-          padding: 4px 10px; border-radius: 20px; display: inline-block;
+          font-size: 0.6rem; font-weight: 900; letter-spacing: 2px;
+          padding: 5px 14px; border-radius: 20px; display: inline-block;
         }
         .role-badge.admin { background: rgba(0,210,255,0.1); color: #4deaff; border: 1px solid rgba(0,210,255,0.2); }
         .role-badge.employee { background: rgba(168,85,247,0.1); color: #a855f7; border: 1px solid rgba(168,85,247,0.2); }
@@ -599,22 +601,20 @@ const AppLayout = ({ user, onLogout, children }) => {
         .main-content {
           flex: 1;
           overflow-y: auto;
-          overflow-x: auto;
+          overflow-x: hidden;
           background:
             radial-gradient(ellipse at 20% 0%, rgba(0,86,255,0.07) 0%, transparent 60%),
             radial-gradient(ellipse at 80% 100%, rgba(0,210,255,0.05) 0%, transparent 60%),
             #070810;
           min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
         }
 
         .page-wrapper {
-          padding: 36px 40px;
+          padding: 56px 60px 40px 40px; /* Aligned vertically, added right padding */
           max-width: 1400px;
+          margin: 0 auto;
           width: 100%;
-          flex: 1;
+          box-sizing: border-box;
         }
 
         .global-toast-notification {
@@ -686,41 +686,13 @@ const AppLayout = ({ user, onLogout, children }) => {
 
         /* ─── Responsive ─── */
         @media (max-width: 768px) {
-          .app-shell { flex-direction: column; padding-bottom: 70px; }
-          
-          /* Top Header Component */
-          .sidebar { 
-            position: sticky; top: 0; width: 100% !important; height: 64px; 
-            flex-direction: row; align-items: center; justify-content: space-between;
-            padding: 0 16px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06);
-            z-index: 100;
-          }
-          .sidebar-logo { padding: 0; margin: 0; border: none; }
-          .collapse-btn { display: none; }
+          .app-shell { flex-direction: column; }
+          .sidebar { width: 100% !important; height: auto; position: relative; flex-direction: row; padding: 12px 16px; }
+          .sidebar-nav { flex-direction: row; flex: none; }
+          .sidebar-bottom { flex-direction: row; border-top: none; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 12px; }
+          .sidebar-logo { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
           .role-badge-wrap { display: none; }
-          
-          /* Bottom Navigation component */
-          .sidebar-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
-            flex-direction: row; justify-content: space-around; align-items: center;
-            background: rgba(10, 12, 20, 0.98); border-top: 1px solid rgba(255,255,255,0.06);
-            padding: 0; z-index: 100; backdrop-filter: blur(20px); overflow: visible;
-          }
-          
-          .s-nav-item { flex-direction: column; gap: 4px; padding: 8px 12px; border-radius: 12px; border: none; background: transparent !important; }
-          .s-nav-label { display: block !important; font-size: 0.6rem; opacity: 0.6; }
-          .s-nav-item.active { color: #4deaff; }
-          .s-nav-item.active .s-nav-label { opacity: 1; color: #4deaff; }
-          .active-pill { display: none; }
-          
-          .sidebar-bottom { padding: 0; border: none; }
-          .s-user-card { border: none; background: transparent; padding: 0; }
-          .s-user-info { display: none; }
-          .settings-menu-wrapper { position: static; }
-          .settings-dropdown { right: 16px; left: auto; top: 70px; bottom: auto; max-width: 260px; }
-          
           .page-wrapper { padding: 20px 16px; }
-          .global-toast-notification { bottom: 90px; right: 16px; left: 16px; width: auto; }
         }
       `}</style>
     </div>

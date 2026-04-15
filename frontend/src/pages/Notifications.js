@@ -442,19 +442,17 @@ const Notifications = ({ user }) => {
 
         @media (max-width: 768px) {
           .settings-container {
-            padding: 24px 16px;
+            padding: 20px 16px;
           }
+
           .settings-header {
             flex-direction: column;
-            align-items: center;
             text-align: center;
-            gap: 16px;
           }
-          .settings-header h1 { font-size: 1.5rem; }
-          .settings-card { padding: 16px; }
-          .form-actions { flex-direction: column; }
-          .notification-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-          .btn-delete { align-self: flex-end; }
+
+          .header-icon {
+            margin: 0 auto;
+          }
         }
       `}</style>
     </div>

@@ -1,8 +1,13 @@
 const Attendance = require('../models/Attendance');
 const Employee = require('../models/Employee');
 const LeaveRequest = require('../models/LeaveRequest');
+const LatePermission = require('../models/LatePermission');
 const attendanceValidation = require('../utils/attendanceValidation');
 const { getClientIP } = require('../middleware/ipMiddleware');
+
+// Attendance window: 10:00 AM to 10:30 AM
+const WINDOW_START_HOUR = 10, WINDOW_START_MIN = 0;
+const WINDOW_END_HOUR = 10, WINDOW_END_MIN = 30;
 
 exports.markAttendance = async (req, res) => {
   try {
@@ -18,7 +23,32 @@ exports.markAttendance = async (req, res) => {
       return res.status(404).json({ error: 'Employee not found' });
     }
 
-    const validation = attendanceValidation.validateAttendanceType(
+    // ── Time-window enforcement (admins are exempt) ──
+    if (employee.role !== 'admin') {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMin = now.getMinutes();
+      const currentTime = currentHour * 60 + currentMin;
+      const windowStart = WINDOW_START_HOUR * 60 + WINDOW_START_MIN;
+      const windowEnd = WINDOW_END_HOUR * 60 + WINDOW_END_MIN;
+
+      if (currentTime < windowStart || currentTime > windowEnd) {
+        // Check if admin has granted late permission for today
+        const latePermission = await LatePermission.findForEmployeeToday(employeeId);
+        if (!latePermission) {
+          const startStr = `${String(WINDOW_START_HOUR).padStart(2,'0')}:${String(WINDOW_START_MIN).padStart(2,'0')}`;
+          const endStr = `${String(WINDOW_END_HOUR).padStart(2,'0')}:${String(WINDOW_END_MIN).padStart(2,'0')}`;
+          return res.status(403).json({
+            error: `Attendance window closed. Logging is only permitted between ${startStr} and ${endStr}. Contact your administrator for late access.`,
+            windowClosed: true
+          });
+        }
+        // Mark the late permission as used
+        await LatePermission.markUsed(latePermission.id);
+      }
+    }
+
+    const validation = await attendanceValidation.validateAttendanceType(
       type,
       employee,
       { latitude, longitude },
@@ -210,3 +240,34 @@ exports.getMonthlyReport = async (req, res) => {
   }
 };
 
+exports.getWindowStatus = async (req, res) => {
+  try {
+    const employeeId = req.user.id;
+    const employee = await Employee.findById(employeeId);
+
+    // Admins are always allowed
+    if (employee.role === 'admin') {
+      return res.json({ windowOpen: true, isAdmin: true });
+    }
+
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const windowStart = WINDOW_START_HOUR * 60 + WINDOW_START_MIN;
+    const windowEnd = WINDOW_END_HOUR * 60 + WINDOW_END_MIN;
+    const windowOpen = currentTime >= windowStart && currentTime <= windowEnd;
+
+    const latePermission = await LatePermission.findForEmployeeToday(employeeId);
+
+    res.json({
+      windowOpen,
+      hasLatePermission: !!latePermission,
+      latePermissionUsed: latePermission?.used === 1,
+      grantedBy: latePermission?.granted_by_name || null,
+      windowStart: `${String(WINDOW_START_HOUR).padStart(2,'0')}:${String(WINDOW_START_MIN).padStart(2,'0')}`,
+      windowEnd: `${String(WINDOW_END_HOUR).padStart(2,'0')}:${String(WINDOW_END_MIN).padStart(2,'0')}`,
+      isAdmin: false
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

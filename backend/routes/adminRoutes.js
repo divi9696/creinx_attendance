@@ -13,5 +13,7 @@ router.get('/analytics', authenticateToken, authorizeRole(['admin']), adminContr
 router.get('/employee/:employeeId', authenticateToken, authorizeRole(['admin']), adminController.getEmployeeAttendance);
 router.get('/employee/:id/full-report', authenticateToken, authorizeRole(['admin']), adminController.getEmployeeFullReport);
 router.post('/leave/:id/review', authenticateToken, authorizeRole(['admin']), adminController.handleLeaveReview);
+router.post('/late-permission', authenticateToken, authorizeRole(['admin']), adminController.grantLatePermission);
+router.get('/late-permissions', authenticateToken, authorizeRole(['admin']), adminController.getLatePermissions);
 
 module.exports = router;

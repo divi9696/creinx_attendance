@@ -1,6 +1,7 @@
 const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
 const LeaveRequest = require('../models/LeaveRequest');
+const LatePermission = require('../models/LatePermission');
 const OTP = require('../models/OTP');
 const emailService = require('../utils/emailService');
 const bcrypt = require('bcryptjs');
@@ -193,6 +194,10 @@ exports.deleteEmployee = async (req, res) => {
       return res.status(404).json({ error: 'Employee not found' });
     }
 
+    if (employee.employee_uid === 'CRX0001') {
+      return res.status(403).json({ error: 'Primary Administrator (CRX0001) cannot be deleted.' });
+    }
+
     const result = await Employee.delete(id);
     if (!result) {
         console.error(`Deleting employee ${id} failed in database`);
@@ -214,6 +219,16 @@ exports.handleLeaveReview = async (req, res) => {
 
     if (!['approved', 'declined'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const leave = await LeaveRequest.findById(id);
+    if (!leave) return res.status(404).json({ error: 'Leave request not found' });
+
+    const targetEmployee = await Employee.findById(leave.employee_id);
+    const actingAdmin = await Employee.findById(adminId);
+
+    if (targetEmployee.role === 'admin' && actingAdmin.employee_uid !== 'CRX0001') {
+      return res.status(403).json({ error: 'Only Primary Administrator (CRX0001) is authorized to review leave requests from other administrators.' });
     }
 
     await LeaveRequest.updateStatus(id, status, adminId, decline_reason);
@@ -243,3 +258,40 @@ exports.getEmployeeFullReport = async (req, res) => {
   }
 };
 
+exports.grantLatePermission = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const { employee_id, reason } = req.body;
+
+    if (!employee_id) {
+      return res.status(400).json({ error: 'employee_id is required' });
+    }
+
+    const employee = await Employee.findById(employee_id);
+    if (!employee) return res.status(404).json({ error: 'Employee not found' });
+
+    const now = new Date();
+    const today = now.getFullYear() + '-' +
+      String(now.getMonth() + 1).padStart(2, '0') + '-' +
+      String(now.getDate()).padStart(2, '0');
+
+    const exists = await LatePermission.alreadyExists(employee_id, today);
+    if (exists) {
+      return res.status(409).json({ error: 'Late permission already granted to this employee for today' });
+    }
+
+    await LatePermission.create({ employee_id, granted_by: adminId, permission_date: today, reason });
+    res.json({ message: `Late attendance permission granted to ${employee.name} for today.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getLatePermissions = async (req, res) => {
+  try {
+    const permissions = await LatePermission.getTodayPermissions();
+    res.json({ permissions });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

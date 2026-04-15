@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
-import { Download, Search, FileDown } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -26,7 +26,7 @@ const AttendanceReport = () => {
         params: dateRange,
         headers: { Authorization: `Bearer ${token}` }
       });
-      setReport(response.data.attendance || []);
+      setReport(response.data.attendance || response.data.report || []);
     } catch (err) {
       console.error('Failed to fetch report', err);
     } finally {
@@ -44,49 +44,88 @@ const AttendanceReport = () => {
     return <span className={`report-badge ${badge.class}`}>{badge.label}</span>;
   };
 
+  const filteredReport = report.filter(log =>
+    log.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-
-  const exportToPDF = () => {
-    if (report.length === 0) {
-      alert('No data to export');
+  const exportPDF = () => {
+    if (filteredReport.length === 0) {
+      alert('No data to export for this period.');
       return;
     }
+    
     const doc = new jsPDF();
     
-    // Add title
+    // Professional Header
+    doc.setFontSize(22);
+    doc.setTextColor(0, 210, 255);
+    doc.text('CREINX', 14, 22);
+    
     doc.setFontSize(16);
-    doc.setTextColor(40);
-    doc.text('Personnel Attendance Logs', 14, 22);
+    doc.setTextColor(40, 40, 40);
+    doc.text('Personnel Attendance Logs', 14, 32);
     
-    // Add subtitle
     doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Period: ${dateRange.startDate} to ${dateRange.endDate}`, 14, 30);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Reporting Period: ${dateRange.startDate} to ${dateRange.endDate}`, 14, 40);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 46);
     
-    // Auto format the table
-    autoTable(doc, {
-      startY: 35,
-      head: [['Employee', 'Email', 'Check-in Date', 'Check-in Time', 'Work Mode', 'Verified IP']],
-      body: report.map(log => [
-        log.employee_name,
-        log.email,
+    // Divider Line
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 50, 196, 50);
+
+    const tableColumn = ["Identity", "Role / Dept", "Check-in Date", "Check-in Time", "Work Mode"];
+    const tableRows = [];
+
+    filteredReport.forEach(log => {
+      const logData = [
+        `${log.employee_name}\n${log.email}`,
+        'Main Ops', // Can be populated if dept is joined, using placeholder to keep pdf clean
         new Date(log.check_in).toLocaleDateString(),
         new Date(log.check_in).toLocaleTimeString(),
-        log.attendance_type.toUpperCase().replace('_', ' '),
-        log.ip_address || '0.0.0.0'
-      ]),
-      theme: 'grid',
-      headStyles: { fillColor: [0, 86, 255] },
-      styles: { fontSize: 8 },
+        log.attendance_type.replace('work_', '').toUpperCase()
+      ];
+      tableRows.push(logData);
     });
-    
-    doc.save(`attendance-report-${new Date().toISOString().split('T')[0]}.pdf`);
-  };
 
-  const filteredReport = report.filter(log =>
-    (log.employee_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (log.email || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 55,
+        theme: 'grid',
+        styles: { 
+          fontSize: 9, 
+          cellPadding: 4, 
+          font: 'helvetica',
+          textColor: [40, 40, 40]
+        },
+        headStyles: { 
+          fillColor: [10, 12, 20], 
+          textColor: [255, 255, 255], 
+          fontSize: 10,
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        columnStyles: {
+          0: { cellWidth: 50 },
+          2: { halign: 'center' },
+          3: { halign: 'center' },
+          4: { halign: 'center', fontStyle: 'bold' }
+        },
+        alternateRowStyles: { fillColor: [245, 248, 250] },
+      });
+
+      const pageCount = doc.internal.getNumberOfPages();
+      for(let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(`Creinx Enterprise Attendance OS • Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+      }
+
+      doc.save(`Creinx_Attendance_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
 
   return (
     <div className="report-hub">
@@ -123,10 +162,9 @@ const AttendanceReport = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
-          <button className="export-btn pdf" onClick={exportToPDF}>
-            <FileDown size={16} />
-            <span>Export PDF</span>
+          <button className="export-pdf-btn" onClick={exportPDF}>
+            <Download size={16} />
+            <span>Generate PDF</span>
           </button>
         </div>
       </div>
@@ -149,20 +187,20 @@ const AttendanceReport = () => {
             ) : (
               filteredReport.map((log, idx) => (
                 <tr key={idx} className="table-row">
-                  <td data-label="Log Identity">
+                  <td>
                     <div className="user-info">
                       <span className="name">{log.employee_name}</span>
                       <span className="email">{log.email}</span>
                     </div>
                   </td>
-                  <td data-label="Timestamp">
+                  <td>
                     <div className="time-info">
                        <span className="date">{new Date(log.check_in).toLocaleDateString()}</span>
                        <span className="time">{new Date(log.check_in).toLocaleTimeString()}</span>
                     </div>
                   </td>
-                  <td data-label="Work Mode">{getStatusBadge(log.attendance_type)}</td>
-                  <td data-label="Verified IP"><code className="ip-addr">{log.ip_address || '0.0.0.0'}</code></td>
+                  <td>{getStatusBadge(log.attendance_type)}</td>
+                  <td><code className="ip-addr">{log.ip_address || '0.0.0.0'}</code></td>
                 </tr>
               ))
             )}
@@ -203,7 +241,7 @@ const AttendanceReport = () => {
           box-shadow: 0 0 15px rgba(77, 234, 255, 0.1);
         }
 
-        .hub-actions { display: flex; gap: 16px; align-items: center; }
+        .hub-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
 
         .search-box {
           display: flex;
@@ -236,8 +274,8 @@ const AttendanceReport = () => {
         .search-input::placeholder {
           color: rgba(255, 255, 255, 0.4);
         }
-
-        .export-btn {
+        
+        .export-pdf-btn {
           display: flex;
           align-items: center;
           gap: 8px;
@@ -253,23 +291,11 @@ const AttendanceReport = () => {
           white-space: nowrap;
         }
 
-        .export-btn:hover {
+        .export-pdf-btn:hover {
           background: linear-gradient(135deg, rgba(77, 234, 255, 0.25), rgba(77, 234, 255, 0.1));
           border-color: rgba(77, 234, 255, 0.5);
           box-shadow: 0 8px 24px rgba(77, 234, 255, 0.15);
           transform: translateY(-2px);
-        }
-        
-        .export-btn.pdf {
-          color: #ef4444;
-          background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
-          border: 1.5px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .export-btn.pdf:hover {
-          background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.1));
-          border-color: rgba(239, 68, 68, 0.5);
-          box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
         }
 
         .premium-table { width: 100%; border-collapse: collapse; }
@@ -294,37 +320,9 @@ const AttendanceReport = () => {
 
         @media (max-width: 768px) {
           .hub-controls { gap: 16px; }
-          .hub-filters { flex-direction: column; align-items: stretch; gap: 12px; }
+          .hub-filters { flex-direction: column; gap: 12px; }
           .hub-actions { flex-direction: column; width: 100%; }
           .search-box { min-width: 100%; }
-          .export-btn { width: 100%; justify-content: center; }
-
-          /* Table Stack */
-          .premium-table thead { display: none; }
-          .table-row { 
-            display: block; 
-            padding: 16px; 
-            margin-bottom: 12px; 
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
-          }
-          .table-row td { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 8px 0; 
-            border: none;
-            width: 100%;
-          }
-          .table-row td:before {
-            content: attr(data-label);
-            font-size: 0.6rem;
-            font-weight: 800;
-            color: rgba(255,255,255,0.3);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-          }
         }
       `}</style>
     </div>

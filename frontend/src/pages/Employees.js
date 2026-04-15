@@ -90,7 +90,7 @@ const Employees = () => {
   };
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Remove ${name} from the workforce matrix?`)) return;
+    if (!window.confirm(`Remove ${name} from staff management?`)) return;
     try {
       await axios.delete(`${API_URL}/admin/employee/${id}`, {
         headers: { Authorization: `Bearer ${token()}` }
@@ -142,7 +142,7 @@ const Employees = () => {
       {/* ─── Header ─── */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="emp-header">
         <div>
-          <h1 className="emp-title">Workforce Matrix</h1>
+          <h1 className="emp-title">Staff Management</h1>
           <p className="emp-sub">{employees.length} personnel registered in system</p>
         </div>
         <motion.button
@@ -169,7 +169,7 @@ const Employees = () => {
                 <div className="emp-form-grid">
                   {formField(<Shield size={16} />, 'Full Name *', 'name', 'text', true)}
                   {formField(<Mail size={16} />, 'Work Email *', 'email', 'email', true)}
-                  {formField(<span style={{fontSize:'0.9rem'}}>📱</span>, 'Mobile Number *', 'mobile', 'tel', !editingId)}
+                  {formField(<span className="ff-icon" style={{fontSize:'0.9rem'}}>📱</span>, 'Mobile Number *', 'mobile', 'tel', !editingId)}
                   {formField(<Briefcase size={16} />, 'Job Designation', 'job_role')}
                   {formField(<Building size={16} />, 'Department / Sector', 'department')}
                   {formField(<Calendar size={16} />, 'Date of Joining', 'date_of_join', 'date')}
@@ -345,23 +345,24 @@ const Employees = () => {
         .emp-form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
 
         .ff {
-          position: relative; display: flex; align-items: center;
+          display: flex; align-items: center;
           background: rgba(0,0,0,0.3);
-          border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; margin-bottom: 2px;
           overflow: hidden; transition: border-color 0.2s;
+          padding-left: 14px; gap: 12px;
         }
         .ff:focus-within { border-color: #4deaff; }
-        .ff :global(svg) { position: absolute; left: 14px; color: rgba(255,255,255,0.3); flex-shrink: 0; }
+        .ff svg, .ff .ff-icon { color: rgba(255,255,255,0.3); flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 20px; }
         .ff input, .ff select {
-          width: 100%; height: 48px; background: transparent;
-          border: none; padding: 0 14px 0 42px;
+          flex: 1; width: 100%; height: 48px; background: transparent;
+          border: none; padding: 0 14px 0 0;
           color: #fff; font-size: 0.875rem; font-family: 'Outfit', sans-serif;
         }
         .ff input:focus, .ff select:focus { outline: none; }
         .ff input::placeholder { color: rgba(255,255,255,0.25); }
         .ff select option { background: #0a0c14; }
 
-        .emp-form-actions { display: flex; gap: 12px; justify-content: flex-end; }
+        .emp-form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 6px; }
         .emp-save-btn {
           background: #4deaff; color: #000; border: none;
           padding: 12px 28px; border-radius: 12px;

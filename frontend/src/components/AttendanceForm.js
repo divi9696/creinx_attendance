@@ -3,7 +3,7 @@ import axios from 'axios';
 import API_URL from '../apiConfig';
 import AttendanceTypeSelector from './AttendanceTypeSelector';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, MapPin, CheckCircle2, AlertTriangle, Loader2, LogOut, Clock } from 'lucide-react';
+import { ShieldCheck, MapPin, CheckCircle2, AlertTriangle, Loader2, LogOut, Clock, Lock } from 'lucide-react';
 
 const AttendanceForm = ({ onSuccess }) => {
   const [location, setLocation] = useState(null);
@@ -14,10 +14,12 @@ const AttendanceForm = ({ onSuccess }) => {
   const [attendanceType, setAttendanceType] = useState({ type: 'work_office', leaveId: null });
   const [hasApprovedLeave, setHasApprovedLeave] = useState(false);
   const [todayRecord, setTodayRecord] = useState(null);
+  const [windowStatus, setWindowStatus] = useState(null);
 
   useEffect(() => {
     checkApprovedLeave();
     fetchTodayStatus();
+    fetchWindowStatus();
   }, []);
 
   const fetchTodayStatus = async () => {
@@ -32,28 +34,49 @@ const AttendanceForm = ({ onSuccess }) => {
     }
   };
 
+  const fetchWindowStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/employee/window-status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setWindowStatus(res.data);
+    } catch (err) {
+      console.error('Could not fetch window status');
+    }
+  };
+
   const checkApprovedLeave = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/leaves`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      // Get today's date in YYYY-MM-DD format
       const now = new Date();
-      const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-      
-      const activeLeave = response.data.leaves?.find(leave =>
-        leave.status === 'approved' && leave.start_date <= today && leave.end_date >= today
-      );
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      const activeLeave = response.data.leaves?.find(leave => {
+        if (leave.status !== 'approved') return false;
+
+        // Parse dates properly
+        const startDate = new Date(leave.start_date);
+        const endDate = new Date(leave.end_date);
+
+        // Check if today falls within the leave range
+        return today >= startDate && today <= endDate;
+      });
 
       if (activeLeave) {
         setHasApprovedLeave(true);
-        // Automatically pre-set the leaveId in state if it exists
         setAttendanceType(prev => ({ ...prev, leaveId: activeLeave.id }));
       } else {
         setHasApprovedLeave(false);
       }
     } catch (err) {
       console.error('Error checking leave status:', err);
+      setHasApprovedLeave(false);
     }
   };
 
@@ -67,6 +90,12 @@ const AttendanceForm = ({ onSuccess }) => {
     setSuccess('');
     try {
       if (attendanceType.type === 'work_office') {
+        // Bypass location checks for admins
+        if (windowStatus && windowStatus.isAdmin) {
+          await submitAttendance(null, null);
+          return;
+        }
+
         if (!navigator.geolocation) {
           setError('Sector Error: Geolocation not supported.');
           setLoading(false);
@@ -145,8 +174,27 @@ const AttendanceForm = ({ onSuccess }) => {
   const alreadyCheckedIn = !!todayRecord;
   const alreadyCheckedOut = !!(todayRecord?.check_out);
 
+  // Window is open if: admin, or within 10:00-10:30, or has unused late permission
+  const canMarkAttendance = !windowStatus || windowStatus.isAdmin ||
+    windowStatus.windowOpen ||
+    (windowStatus.hasLatePermission && !windowStatus.latePermissionUsed);
+
   return (
     <div className="attendance-form-lite">
+
+      {/* ── Attendance Window Banner ── */}
+      {windowStatus && !windowStatus.isAdmin && !alreadyCheckedIn && (
+        <div className={`window-banner ${canMarkAttendance ? 'window-open' : 'window-closed'}`}>
+          {canMarkAttendance ? (
+            <><Clock size={14} /><span>Attendance window open: <b>{windowStatus.windowStart} – {windowStatus.windowEnd}</b>
+              {windowStatus.hasLatePermission && !windowStatus.latePermissionUsed &&
+                <span className="late-perm-tag"> · Late Access Granted</span>}
+            </span></>
+          ) : (
+            <><Lock size={14} /><span>Attendance window closed ({windowStatus.windowStart} – {windowStatus.windowEnd}). Contact admin for late access.</span></>
+          )}
+        </div>
+      )}
 
       {/* Today's Session Status */}
       <AnimatePresence>
@@ -204,21 +252,23 @@ const AttendanceForm = ({ onSuccess }) => {
       {/* Primary Action Buttons */}
       {!alreadyCheckedIn && (
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: canMarkAttendance ? 1.02 : 1 }}
+          whileTap={{ scale: canMarkAttendance ? 0.95 : 1 }}
           onClick={handleMarkAttendance}
-          disabled={loading || (attendanceType.type === 'leave' && !hasApprovedLeave)}
+          disabled={loading || !canMarkAttendance || (attendanceType.type === 'leave' && !hasApprovedLeave)}
           className="mark-action-btn-elite"
         >
           {loading ? (
             <div className="action-loading"><Loader2 className="spinner-icon" /><span>VERIFYING SIGNAL...</span></div>
+          ) : !canMarkAttendance ? (
+            <><Lock size={20} /><span>WINDOW CLOSED</span></>
           ) : (
             <><ShieldCheck size={20} /><span>INITIALIZE LOGGING</span></>
           )}
         </motion.button>
       )}
 
-      {alreadyCheckedIn && !alreadyCheckedOut && (
+      {alreadyCheckedIn && !alreadyCheckedOut && todayRecord?.attendance_type !== 'leave' && (
         <motion.button
           whileHover={{ scale: 1.02, backgroundColor: 'rgba(239,68,68,0.8)' }}
           whileTap={{ scale: 0.95 }}
@@ -241,6 +291,13 @@ const AttendanceForm = ({ onSuccess }) => {
         </div>
       )}
 
+      {alreadyCheckedIn && todayRecord?.attendance_type === 'leave' && (
+        <div className="session-complete-badge" style={{ background: 'rgba(168,85,247,0.15)', borderColor: 'rgba(168,85,247,0.3)' }}>
+          <CheckCircle2 size={18} style={{ color: '#a855f7' }} />
+          <span style={{ color: '#a855f7' }}>LEAVE MARKED</span>
+        </div>
+      )}
+
       {/* Location Badge */}
       <AnimatePresence>
         {location && (
@@ -253,6 +310,23 @@ const AttendanceForm = ({ onSuccess }) => {
 
       <style jsx>{`
         .attendance-form-lite { display: flex; flex-direction: column; gap: 20px; }
+
+        .window-banner {
+          display: flex; align-items: center; gap: 10px;
+          padding: 10px 16px; border-radius: 12px;
+          font-size: 0.78rem; font-weight: 600;
+        }
+        .window-banner.window-open {
+          background: rgba(34,197,94,0.08); color: #22c55e;
+          border: 1px solid rgba(34,197,94,0.2);
+        }
+        .window-banner.window-closed {
+          background: rgba(239,68,68,0.08); color: #ef4444;
+          border: 1px solid rgba(239,68,68,0.2);
+        }
+        .late-perm-tag {
+          color: #f59e0b; font-weight: 800;
+        }
 
         .session-status-card {
           background: rgba(0, 210, 255, 0.05);
@@ -319,14 +393,15 @@ const AttendanceForm = ({ onSuccess }) => {
         .success-alert-haptic { background: rgba(34,197,94,0.1); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
 
         .mark-action-btn-elite {
-          height: 60px; background: var(--primary-glow);
+          height: 60px; background: #4deaff;
           border: none; border-radius: 16px;
           color: #000; font-weight: 800; font-size: 0.9rem;
           letter-spacing: 1.5px; cursor: pointer;
           display: flex; align-items: center; justify-content: center; gap: 12px;
-          box-shadow: 0 10px 20px rgba(0,210,255,0.2); transition: all 0.3s ease;
+          box-shadow: 0 10px 20px rgba(77,234,255,0.25); transition: all 0.3s ease;
         }
-        .mark-action-btn-elite:disabled { background: #1e293b; color: #475569; cursor: not-allowed; box-shadow: none; }
+        .mark-action-btn-elite:hover { background: #00d2ff; box-shadow: 0 15px 30px rgba(0,210,255,0.35); transform: translateY(-3px); }
+        .mark-action-btn-elite:disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: not-allowed; box-shadow: none; transform: none; }
 
         .checkout-btn-elite {
           height: 60px; background: rgba(239,68,68,0.15);

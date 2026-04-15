@@ -54,6 +54,12 @@ const EmployeeDashboard = () => {
           <Clock size={15} /> My Workspace
         </button>
         <button
+          className={`emp-tab ${activeTab === 'leave' ? 'active' : ''}`}
+          onClick={() => setActiveTab('leave')}
+        >
+          <Calendar size={15} /> Leave Request
+        </button>
+        <button
           className={`emp-tab ${activeTab === 'report' ? 'active' : ''}`}
           onClick={() => setActiveTab('report')}
         >
@@ -73,60 +79,57 @@ const EmployeeDashboard = () => {
             </div>
             <EmployeeMonthlyReport />
           </motion.div>
+        ) : activeTab === 'leave' ? (
+          <motion.div key="leave" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="emp-column"
+            >
+              {/* Leave Request Card */}
+              <motion.div variants={cardVariants} className="emp-card">
+                <div className="emp-card-top">
+                  <div className="emp-card-icon leave"><Calendar size={18} /></div>
+                  <div>
+                    <h3>Request Leave</h3>
+                    <p>Submit a leave request for approval</p>
+                  </div>
+                </div>
+                <LeaveRequestForm onSuccess={handleLeaveSuccess} />
+              </motion.div>
+
+              {/* My Leave Requests Card */}
+              <motion.div variants={cardVariants} className="emp-card">
+                <div className="emp-card-top">
+                  <div className="emp-card-icon status"><MessageSquare size={18} /></div>
+                  <div>
+                    <h3>My Leave Requests</h3>
+                    <p>Track all leave statuses</p>
+                  </div>
+                </div>
+                <LeaveStatusWidget key={refreshKey} />
+              </motion.div>
+            </motion.div>
+          </motion.div>
         ) : (
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="emp-grid"
+        className="emp-grid-single"
       >
-        {/* Left Column */}
-        <div className="emp-left">
-          {/* Attendance Card */}
-          <motion.div variants={cardVariants} className="emp-card">
-            <div className="emp-card-top">
-              <div className="emp-card-icon"><Clock size={18} /></div>
-              <div>
-                <h3>Daily Attendance</h3>
-                <p>Mark your work session for today</p>
-              </div>
+        {/* Attendance Card - Full Width */}
+        <motion.div variants={cardVariants} className="emp-card">
+          <div className="emp-card-top">
+            <div className="emp-card-icon"><Clock size={18} /></div>
+            <div>
+              <h3>Daily Attendance</h3>
+              <p>Mark your work session for today</p>
             </div>
-            <AttendanceForm onSuccess={handleAttendanceSuccess} />
-          </motion.div>
-
-          {/* Leave Request Card */}
-          <motion.div variants={cardVariants} className="emp-card">
-            <div className="emp-card-top">
-              <div className="emp-card-icon leave"><Calendar size={18} /></div>
-              <div>
-                <h3>Request Leave</h3>
-                <p>Submit a leave request for approval</p>
-              </div>
-            </div>
-            <LeaveRequestForm onSuccess={handleLeaveSuccess} />
-          </motion.div>
-        </div>
-
-        {/* Right Column */}
-        <aside className="emp-right">
-          <motion.div variants={cardVariants} className="emp-card">
-            <div className="emp-card-top">
-              <div className="emp-card-icon status"><MessageSquare size={18} /></div>
-              <div>
-                <h3>My Leave Requests</h3>
-                <p>Track all leave statuses</p>
-              </div>
-            </div>
-            <LeaveStatusWidget key={refreshKey} />
-          </motion.div>
-
-          {/* Quick Info Card */}
-          <motion.div variants={cardVariants} className="emp-info-card">
-            <h4>Enterprise Support</h4>
-            <p>Need a manual attendance correction or have policy questions? Connect with your HR team directly.</p>
-            <button className="emp-support-btn">Contact HR</button>
-          </motion.div>
-        </aside>
+          </div>
+          <AttendanceForm onSuccess={handleAttendanceSuccess} />
+        </motion.div>
       </motion.div>
         )}
       </AnimatePresence>
@@ -189,9 +192,22 @@ const EmployeeDashboard = () => {
 
         .emp-grid {
           display: grid;
-          grid-template-columns: 1fr 380px;
+          grid-template-columns: 1fr 1fr;
           gap: 24px;
           align-items: start;
+        }
+
+        .emp-grid-single {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          width: 100%;
+        }
+
+        .emp-column {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
         }
 
         .emp-left, .emp-right {
@@ -204,7 +220,7 @@ const EmployeeDashboard = () => {
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.07);
           border-radius: 20px;
-          padding: 28px;
+          padding: 24px;
           transition: border-color 0.3s;
         }
         .emp-card:hover { border-color: rgba(255,255,255,0.12); }
@@ -213,8 +229,8 @@ const EmployeeDashboard = () => {
           display: flex;
           align-items: flex-start;
           gap: 16px;
-          margin-bottom: 24px;
-          padding-bottom: 18px;
+          margin-bottom: 20px;
+          padding-bottom: 16px;
           border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
