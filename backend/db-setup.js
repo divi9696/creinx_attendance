@@ -14,24 +14,17 @@ const setupDatabase = async () => {
     if (result.count === 0) {
       // Hash passwords
       const adminPass = bcrypt.hashSync('admin123', 10);
-      const empPass   = bcrypt.hashSync('emp123', 10);
 
       // Insert seed users with employee_uid and is_verified=1
       await db.query(`
         INSERT INTO employees (employee_uid, name, email, mobile, password, role, department, is_verified)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `, [
-        'CRX0001', 'Admin User',     'admin@company.com',   '9000000001', adminPass, 'admin',    'Management',  1,
-        'CRX0002', 'Alice Cooper',   'alice@company.com',   '9000000002', empPass,   'employee', 'Engineering', 1,
-        'CRX0003', 'Bob Marley',     'bob@company.com',     '9000000003', empPass,   'employee', 'Finance',     1,
-        'CRX0004', 'Charlie Brown',  'charlie@company.com', '9000000004', empPass,   'employee', 'Operations',  1,
+        'CRX0001', 'Admin User', 'admin@company.com', '9000000001', adminPass, 'admin', 'Management', 1
       ]);
 
-      console.log('✅ Test users created:');
-      console.log('   Admin:    CRX0001 / admin123');
-      console.log('   Employee: CRX0002 / emp123 (Alice Cooper)');
-      console.log('   Employee: CRX0003 / emp123 (Bob Marley)');
-      console.log('   Employee: CRX0004 / emp123 (Charlie Brown)');
+      console.log('✅ Default Admin created:');
+      console.log('   Admin: CRX0001 / admin123');
     } else {
       // Backfill employee_uid for existing employees that don't have one
       const [existing] = await db.query(`SELECT id FROM employees WHERE employee_uid IS NULL ORDER BY id ASC`);
