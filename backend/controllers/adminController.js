@@ -295,3 +295,30 @@ exports.getLatePermissions = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// ─── RESET EMPLOYEE DEVICE IP (admin action) ──────────────────────────────
+exports.resetDeviceIp = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const actingAdmin = await Employee.findById(req.user.id);
+
+    // Only CRX0001 can reset device bindings (to prevent abuse)
+    if (actingAdmin.employee_uid !== 'CRX0001') {
+      return res.status(403).json({ error: 'Only the Primary Administrator (CRX0001) can reset device bindings.' });
+    }
+
+    const employee = await Employee.findById(id);
+    if (!employee) return res.status(404).json({ error: 'Employee not found' });
+
+    if (employee.employee_uid === 'CRX0001') {
+      return res.status(400).json({ error: 'CRX0001 does not have a device binding to reset.' });
+    }
+
+    await Employee.clearDeviceIp(id);
+    res.json({
+      message: `Device IP binding cleared for ${employee.name} (${employee.employee_uid}). They can now re-activate from a new device.`
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

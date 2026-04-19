@@ -5,6 +5,16 @@ const OTP = require('../models/OTP');
 const emailService = require('../utils/emailService');
 const { validatePassword, checkRequirements } = require('../utils/passwordValidator');
 
+// ─── Extract real client IP (works behind Vercel/proxy) ───────────────────
+const getClientIp = (req) => {
+  // x-forwarded-for can be a comma-separated list: client, proxy1, proxy2
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || req.connection?.remoteAddress || 'unknown';
+};
+
 // ─── LOGIN (by Employee UID) ───────────────────────────────────────────────
 exports.login = async (req, res) => {
   try {
@@ -31,6 +41,22 @@ exports.login = async (req, res) => {
     const passwordMatch = bcrypt.compareSync(password, employee.password);
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Invalid Employee ID or password' });
+    }
+
+    // ── Device IP Restriction (exempt: CRX0001) ────────────────────────────
+    if (employee.employee_uid !== 'CRX0001') {
+      if (employee.device_ip) {
+        // Account has a registered device — enforce the check
+        const clientIp = getClientIp(req);
+        if (employee.device_ip !== clientIp) {
+          return res.status(403).json({
+            error: 'Security Block: Unauthorized device detected. You can only log into your account from your specifically registered device.',
+            code: 'DEVICE_MISMATCH'
+          });
+        }
+      }
+      // If device_ip is null (old accounts or edge cases), let login succeed
+      // — the IP will be bound when they next activate or an admin resets it
     }
 
     const token = jwt.sign(
@@ -136,6 +162,11 @@ exports.activateAccount = async (req, res) => {
 
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
     await Employee.activateAccount(employee.id, hashedPassword);
+
+    // ── Bind this device IP permanently at activation time ─────────────────
+    const activationIp = getClientIp(req);
+    await Employee.bindDeviceIp(employee.id, activationIp);
+    console.log(`Device IP ${activationIp} bound to employee ${employee.employee_uid} at activation.`);
 
     res.json({ message: 'Account activated successfully! You can now login.' });
   } catch (error) {

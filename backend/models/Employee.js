@@ -109,6 +109,15 @@ class Employee {
     );
     return result.affectedRows > 0;
   }
+
+  // Clear device IP binding (admin action — allows employee to re-bind from new device)
+  static async clearDeviceIp(employeeId) {
+    const [result] = await db.execute(
+      'UPDATE employees SET device_ip = NULL WHERE id = ?',
+      [employeeId]
+    );
+    return result.affectedRows > 0;
+  }
 }
 
 module.exports = Employee;
