@@ -15,6 +15,22 @@ const getClientIp = (req) => {
   return req.socket?.remoteAddress || req.connection?.remoteAddress || 'unknown';
 };
 
+// ─── Subnet match: compare first 3 octets (/24) ────────────────────────────
+// Handles dynamic IPs that change slightly within the same ISP/network block
+const isSameSubnet = (storedIp, clientIp) => {
+  if (!storedIp || !clientIp) return false;
+  // Strip IPv6-to-IPv4 prefix  e.g. ::ffff:192.168.1.1 → 192.168.1.1
+  const clean = (ip) => ip.replace(/^::ffff:/, '');
+  const a = clean(storedIp).split('.');
+  const b = clean(clientIp).split('.');
+  if (a.length !== 4 || b.length !== 4) {
+    // IPv6 or unknown format — fall back to exact match
+    return clean(storedIp) === clean(clientIp);
+  }
+  // Compare first 3 octets (e.g. 103.45.67.x)
+  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+};
+
 // ─── LOGIN (by Employee UID) ───────────────────────────────────────────────
 exports.login = async (req, res) => {
   try {
@@ -45,18 +61,20 @@ exports.login = async (req, res) => {
 
     // ── Device IP Restriction (exempt: CRX0001) ────────────────────────────
     if (employee.employee_uid !== 'CRX0001') {
+      const clientIp = getClientIp(req);
       if (employee.device_ip) {
-        // Account has a registered device — enforce the check
-        const clientIp = getClientIp(req);
-        if (employee.device_ip !== clientIp) {
+        // Account has a registered device — enforce subnet-level check
+        if (!isSameSubnet(employee.device_ip, clientIp)) {
           return res.status(403).json({
             error: 'Security Block: Unauthorized device detected. You can only log into your account from your specifically registered device.',
             code: 'DEVICE_MISMATCH'
           });
         }
+      } else {
+        // device_ip is NULL (admin reset it, or old account) — bind current IP now
+        await Employee.bindDeviceIp(employee.id, clientIp);
+        console.log(`[Auth] First-time device bind for ${employee.employee_uid}: ${clientIp}`);
       }
-      // If device_ip is null (old accounts or edge cases), let login succeed
-      // — the IP will be bound when they next activate or an admin resets it
     }
 
     const token = jwt.sign(
