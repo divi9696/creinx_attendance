@@ -37,7 +37,12 @@ const Login = ({ onLoginSuccess }) => {
         setNotVerified(true);
         setError('Account not activated. Check your email for the activation OTP.');
       } else {
-        setError(errData?.error || 'Access Denied: Invalid Credentials');
+        const errorVal = errData?.error;
+        if (typeof errorVal === 'object' && errorVal !== null) {
+          setError(errorVal.message || JSON.stringify(errorVal));
+        } else {
+          setError(errorVal || (err?.message || 'Access Denied: Invalid Credentials'));
+        }
       }
     } finally {
       setLoading(false);
