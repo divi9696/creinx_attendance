@@ -279,10 +279,19 @@ const AppLayout = ({ user, onLogout, children }) => {
       <style jsx>{`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap');
 
+        :global(body) {
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+        }
+
         .app-shell {
+          position: fixed;
+          top: 0;
+          left: 0;
           display: flex;
-          min-height: 100vh;
-          width: 100vw;
+          height: 100vh;
+          width: 100%;
           background: #070810;
           color: #fff;
           font-family: 'Outfit', sans-serif;

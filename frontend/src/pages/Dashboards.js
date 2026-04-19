@@ -13,7 +13,7 @@ const Dashboards = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('intelligence');
+  const [activeTab, setActiveTab] = useState('workspace');
   const [workspaceRefreshKey, setWorkspaceRefreshKey] = useState(0);
 
   useEffect(() => { fetchDashboardData(); }, []);
@@ -95,16 +95,16 @@ const Dashboards = () => {
       {/* ─── Admin Tabs ─── */}
       <div className="emp-tabs" style={{ marginBottom: '28px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px', display: 'flex', gap: '8px' }}>
         <button
-          className={`emp-tab ${activeTab === 'intelligence' ? 'active' : ''}`}
-          onClick={() => setActiveTab('intelligence')}
-        >
-          <Activity size={15} /> Intelligence Hub
-        </button>
-        <button
           className={`emp-tab ${activeTab === 'workspace' ? 'active' : ''}`}
           onClick={() => setActiveTab('workspace')}
         >
           <Briefcase size={15} /> Personal Workspace
+        </button>
+        <button
+          className={`emp-tab ${activeTab === 'intelligence' ? 'active' : ''}`}
+          onClick={() => setActiveTab('intelligence')}
+        >
+          <Activity size={15} /> Intelligence Hub
         </button>
         <button
           className={`emp-tab ${activeTab === 'leave' ? 'active' : ''}`}
@@ -187,7 +187,15 @@ const Dashboards = () => {
       </AnimatePresence>
 
       <style jsx>{`
-        .adm-page { width: 100%; display: flex; flex-direction: column; gap: 28px; }
+        .adm-page { 
+          width: 100%; 
+          max-width: 100%;
+          display: flex; 
+          flex-direction: column; 
+          gap: 28px;
+          overflow-x: hidden;
+          box-sizing: border-box;
+        }
 
         .adm-header {
           display: flex;
@@ -214,26 +222,32 @@ const Dashboards = () => {
         .adm-stats-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 18px;
+          gap: 16px;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .adm-stat-card {
           background: rgba(255,255,255,0.03);
           border: 1px solid;
           border-radius: 18px;
-          padding: 24px;
+          padding: 22px 20px;
           display: flex;
           align-items: center;
-          gap: 18px;
+          gap: 16px;
           cursor: default;
           transition: all 0.2s;
+          box-sizing: border-box;
+          min-width: 0; /* prevent grid blowout */
         }
 
         .adm-stat-icon {
-          width: 52px; height: 52px; border-radius: 14px;
+          width: 50px; height: 50px; border-radius: 14px;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
+
+        .adm-stat-body { min-width: 0; flex: 1; }
 
         .adm-stat-num {
           display: block;
@@ -244,6 +258,9 @@ const Dashboards = () => {
           font-size: 0.72rem; font-weight: 800;
           text-transform: uppercase; letter-spacing: 1px;
           color: rgba(255,255,255,0.4);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .adm-section-card {
@@ -251,6 +268,8 @@ const Dashboards = () => {
           border: 1px solid rgba(255,255,255,0.07);
           border-radius: 20px;
           padding: 24px;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .adm-card-header {
@@ -310,10 +329,13 @@ const Dashboards = () => {
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        @media (max-width: 1100px) { .adm-stats-grid { grid-template-columns: repeat(2, 1fr); } .emp-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 1100px) { 
+          .adm-stats-grid { grid-template-columns: repeat(2, 1fr); } 
+          .emp-grid { grid-template-columns: 1fr; } 
+        }
         @media (max-width: 600px) { 
           .adm-stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; } 
-          .adm-stat-card { padding: 16px; gap: 12px; flex-direction: column; text-align: center; justify-content: center; } 
+          .adm-stat-card { padding: 16px; gap: 12px; }
           .adm-stat-icon { width: 44px; height: 44px; }
           .adm-stat-num { font-size: 1.5rem; }
           .adm-title { font-size: 1.5rem; } 
