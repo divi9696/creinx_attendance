@@ -31,9 +31,14 @@ const Login = ({ onLoginSuccess }) => {
         password,
         device_token: deviceToken
       });
-      const { token, user } = response.data;
+      const { token, user, device_token: freshToken } = response.data;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+      // If server returned a freshly generated device token (first-login binding),
+      // store it now so all future logins from this browser are authenticated.
+      if (freshToken) {
+        localStorage.setItem(`crx_device_token_${uid}`, freshToken);
+      }
       onLoginSuccess(user);
       navigate(user.role === 'admin' ? '/admin/dashboards' : '/employee/dashboard');
     } catch (err) {

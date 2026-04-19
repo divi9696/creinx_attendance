@@ -35,13 +35,13 @@ exports.login = async (req, res) => {
     }
 
     // ── Device Token Restriction (exempt: CRX0001) ─────────────────────────
-    // Token is bound to the specific browser/device at activation time.
-    // It prevents any other device — even on the same network — from logging in.
+    let freshDeviceToken = null; // set if we generate one during this login
+
     if (employee.employee_uid !== 'CRX0001') {
-      const submittedToken = req.body.device_token || req.headers['x-device-token'] || null;
+      const submittedToken = req.body.device_token || null;
 
       if (employee.device_token) {
-        // Account has an activated device token — must match exactly
+        // ✔ Account already has a registered device — MUST match exactly
         if (!submittedToken || employee.device_token !== submittedToken) {
           return res.status(403).json({
             error: 'Security Block: Unauthorized device detected. You can only log into your account from your specifically registered device.',
@@ -49,12 +49,12 @@ exports.login = async (req, res) => {
           });
         }
       } else {
-        // No device_token yet (account activated before this system existed).
-        // Bind whoever logs in first — they'll own this account going forward.
-        if (submittedToken) {
-          await Employee.bindDeviceToken(employee.id, submittedToken);
-          console.log(`[Auth] First-time device token bound for ${employee.employee_uid}`);
-        }
+        // No device_token yet — generate one NOW and bind to THIS device.
+        // This happens for accounts activated before the token system existed.
+        // The FIRST device to login claims the account permanently.
+        freshDeviceToken = crypto.randomBytes(32).toString('hex');
+        await Employee.bindDeviceToken(employee.id, freshDeviceToken);
+        console.log(`[Auth] Device token auto-generated on first login for ${employee.employee_uid}`);
       }
     }
 
@@ -64,7 +64,7 @@ exports.login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.json({
+    const responsePayload = {
       message: 'Login successful',
       token,
       user: {
@@ -75,7 +75,14 @@ exports.login = async (req, res) => {
         role: employee.role,
         first_login: employee.first_login
       }
-    });
+    };
+
+    // Send freshly generated token so frontend can store it in localStorage
+    if (freshDeviceToken) {
+      responsePayload.device_token = freshDeviceToken;
+    }
+
+    res.json(responsePayload);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
