@@ -20,6 +20,9 @@ const Reports = () => {
           <p className="rpt-sub">View detailed attendance logs and employee activity records</p>
         </div>
         <div className="rpt-actions">
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => window.print()} className="rpt-btn secondary">
+            <Download size={16} /><span>Export PDF</span>
+          </motion.button>
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleRefresh} className="rpt-btn primary">
             <RefreshCcw size={16} className={refreshing ? 'spin' : ''} /><span>Sync Data</span>
           </motion.button>

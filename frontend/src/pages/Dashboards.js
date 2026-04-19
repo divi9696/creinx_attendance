@@ -116,7 +116,7 @@ const Dashboards = () => {
 
       <AnimatePresence mode="wait">
         {activeTab === 'intelligence' ? (
-          <motion.div key="intelligence" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="adm-column">
+          <motion.div key="intelligence" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             {/* ─── Stat Cards ─── */}
       <div className="adm-stats-grid">
         {stats.map((stat, idx) => (

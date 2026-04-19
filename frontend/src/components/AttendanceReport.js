@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
-import { Search, Download } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { Download, Search } from 'lucide-react';
 
 const AttendanceReport = () => {
   const [report, setReport] = useState([]);
@@ -26,7 +24,7 @@ const AttendanceReport = () => {
         params: dateRange,
         headers: { Authorization: `Bearer ${token}` }
       });
-      setReport(response.data.attendance || response.data.report || []);
+      setReport(response.data.report || []);
     } catch (err) {
       console.error('Failed to fetch report', err);
     } finally {
@@ -44,88 +42,33 @@ const AttendanceReport = () => {
     return <span className={`report-badge ${badge.class}`}>{badge.label}</span>;
   };
 
+  const exportToCSV = () => {
+    if (report.length === 0) {
+      alert('No data to export');
+      return;
+    }
+    const headers = ['Employee Name', 'Email', 'Check-in Date', 'Check-in Time', 'Work Mode', 'IP Address'];
+    const rows = report.map(log => [
+      log.employee_name,
+      log.email,
+      new Date(log.check_in).toLocaleDateString(),
+      new Date(log.check_in).toLocaleTimeString(),
+      log.attendance_type,
+      log.ip_address || '0.0.0.0'
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `attendance-report-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
+
   const filteredReport = report.filter(log =>
     log.employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const exportPDF = () => {
-    if (filteredReport.length === 0) {
-      alert('No data to export for this period.');
-      return;
-    }
-    
-    const doc = new jsPDF();
-    
-    // Professional Header
-    doc.setFontSize(22);
-    doc.setTextColor(0, 210, 255);
-    doc.text('CREINX', 14, 22);
-    
-    doc.setFontSize(16);
-    doc.setTextColor(40, 40, 40);
-    doc.text('Personnel Attendance Logs', 14, 32);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Reporting Period: ${dateRange.startDate} to ${dateRange.endDate}`, 14, 40);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 46);
-    
-    // Divider Line
-    doc.setDrawColor(200, 200, 200);
-    doc.line(14, 50, 196, 50);
-
-    const tableColumn = ["Identity", "Role / Dept", "Check-in Date", "Check-in Time", "Work Mode"];
-    const tableRows = [];
-
-    filteredReport.forEach(log => {
-      const logData = [
-        `${log.employee_name}\n${log.email}`,
-        'Main Ops', // Can be populated if dept is joined, using placeholder to keep pdf clean
-        new Date(log.check_in).toLocaleDateString(),
-        new Date(log.check_in).toLocaleTimeString(),
-        log.attendance_type.replace('work_', '').toUpperCase()
-      ];
-      tableRows.push(logData);
-    });
-
-    autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: 55,
-        theme: 'grid',
-        styles: { 
-          fontSize: 9, 
-          cellPadding: 4, 
-          font: 'helvetica',
-          textColor: [40, 40, 40]
-        },
-        headStyles: { 
-          fillColor: [10, 12, 20], 
-          textColor: [255, 255, 255], 
-          fontSize: 10,
-          fontStyle: 'bold',
-          halign: 'center'
-        },
-        columnStyles: {
-          0: { cellWidth: 50 },
-          2: { halign: 'center' },
-          3: { halign: 'center' },
-          4: { halign: 'center', fontStyle: 'bold' }
-        },
-        alternateRowStyles: { fillColor: [245, 248, 250] },
-      });
-
-      const pageCount = doc.internal.getNumberOfPages();
-      for(let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150);
-        doc.text(`Creinx Enterprise Attendance OS • Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
-      }
-
-      doc.save(`Creinx_Attendance_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
 
   return (
     <div className="report-hub">
@@ -162,9 +105,9 @@ const AttendanceReport = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="export-pdf-btn" onClick={exportPDF}>
+          <button className="export-btn" onClick={exportToCSV}>
             <Download size={16} />
-            <span>Generate PDF</span>
+            <span>Export CSV</span>
           </button>
         </div>
       </div>
@@ -241,7 +184,7 @@ const AttendanceReport = () => {
           box-shadow: 0 0 15px rgba(77, 234, 255, 0.1);
         }
 
-        .hub-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+        .hub-actions { display: flex; gap: 16px; align-items: center; }
 
         .search-box {
           display: flex;
@@ -274,8 +217,8 @@ const AttendanceReport = () => {
         .search-input::placeholder {
           color: rgba(255, 255, 255, 0.4);
         }
-        
-        .export-pdf-btn {
+
+        .export-btn {
           display: flex;
           align-items: center;
           gap: 8px;
@@ -291,7 +234,7 @@ const AttendanceReport = () => {
           white-space: nowrap;
         }
 
-        .export-pdf-btn:hover {
+        .export-btn:hover {
           background: linear-gradient(135deg, rgba(77, 234, 255, 0.25), rgba(77, 234, 255, 0.1));
           border-color: rgba(77, 234, 255, 0.5);
           box-shadow: 0 8px 24px rgba(77, 234, 255, 0.15);

@@ -14,23 +14,6 @@ const AppLayout = ({ user, onLogout, children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [unreadAnnouncement, setUnreadAnnouncement] = useState(null);
-  const settingsRef = React.useRef(null);
-
-  // Close settings when route changes
-  React.useEffect(() => {
-    setShowSettings(false);
-  }, [location.pathname]);
-
-  // Close settings when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
-        setShowSettings(false);
-      }
-    };
-    if (showSettings) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showSettings]);
 
   React.useEffect(() => {
     const fetchLatestAnnouncement = async () => {
@@ -68,7 +51,7 @@ const AppLayout = ({ user, onLogout, children }) => {
 
   const adminNav = [
     { to: '/admin/dashboards', icon: <LayoutDashboard size={20} />, label: 'Intelligence Hub' },
-    { to: '/admin/employees', icon: <Users size={20} />, label: 'Staff Management' },
+    { to: '/admin/employees', icon: <Users size={20} />, label: 'Workforce Matrix' },
     { to: '/admin/reports', icon: <FileBarChart2 size={20} />, label: 'Archive & Logs' },
     { to: '/notifications', icon: <Bell size={20} />, label: 'Announcements' },
   ];
@@ -104,7 +87,7 @@ const AppLayout = ({ user, onLogout, children }) => {
       <motion.aside
         animate={{ width: collapsed ? 72 : 260 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className={`sidebar ${collapsed ? 'collapsed' : ''}`}
+        className="sidebar"
       >
         {/* Logo */}
         <div className="sidebar-logo">
@@ -184,78 +167,76 @@ const AppLayout = ({ user, onLogout, children }) => {
             </AnimatePresence>
 
             {/* Settings Dropdown Button */}
-            {!collapsed && (
-              <div className="settings-menu-wrapper" ref={settingsRef}>
-                <motion.button
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setShowSettings(!showSettings)}
-                  className="s-settings-btn"
-                  title="Settings"
-                >
-                  <Settings size={16} />
-                </motion.button>
+            <div className="settings-menu-wrapper">
+              <motion.button
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowSettings(!showSettings)}
+                className="s-settings-btn"
+                title="Settings"
+              >
+                <Settings size={16} />
+              </motion.button>
 
-                {/* Dropdown Menu */}
-                <AnimatePresence>
-                  {showSettings && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className="settings-dropdown"
-                    >
-                      {/* Account Section */}
-                      <div className="dropdown-section">
-                        <div className="section-header">ACCOUNT</div>
-                        <div className="menu-item info-item">
-                          <span className="menu-label">Account</span>
-                          <span className="menu-desc">{user?.email}</span>
+              {/* Dropdown Menu */}
+              <AnimatePresence>
+                {showSettings && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="settings-dropdown"
+                  >
+                    {/* Account Section */}
+                    <div className="dropdown-section">
+                      <div className="section-header">ACCOUNT</div>
+                      <div className="menu-item info-item">
+                        <span className="menu-label">Account</span>
+                        <span className="menu-desc">{user?.email}</span>
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="dropdown-divider"></div>
+
+                    {/* Settings Section */}
+                    <div className="dropdown-section">
+                      <div className="section-header">SETTINGS</div>
+                      <button onClick={handleChangePassword} className="menu-item">
+                        <Lock size={14} />
+                        <div className="menu-text">
+                          <span className="menu-label">Change Password</span>
+                          <span className="menu-desc">Update security</span>
                         </div>
-                      </div>
+                      </button>
+                      <button onClick={handleNotifications} className="menu-item">
+                        <Bell size={14} />
+                        <div className="menu-text">
+                          <span className="menu-label">Notifications</span>
+                          <span className="menu-desc">Alert settings</span>
+                        </div>
+                      </button>
+                    </div>
 
-                      {/* Divider */}
-                      <div className="dropdown-divider"></div>
+                    {/* Divider */}
+                    <div className="dropdown-divider"></div>
 
-                      {/* Settings Section */}
-                      <div className="dropdown-section">
-                        <div className="section-header">SETTINGS</div>
-                        <button onClick={handleChangePassword} className="menu-item">
-                          <Lock size={14} />
-                          <div className="menu-text">
-                            <span className="menu-label">Change Password</span>
-                            <span className="menu-desc">Update security</span>
-                          </div>
-                        </button>
-                        <button onClick={handleNotifications} className="menu-item">
-                          <Bell size={14} />
-                          <div className="menu-text">
-                            <span className="menu-label">Notifications</span>
-                            <span className="menu-desc">Alert settings</span>
-                          </div>
-                        </button>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="dropdown-divider"></div>
-
-                      {/* Session Section */}
-                      <div className="dropdown-section">
-                        <div className="section-header">SESSION</div>
-                        <button onClick={handleLogout} className="menu-item danger">
-                          <LogOut size={14} />
-                          <div className="menu-text">
-                            <span className="menu-label">Sign Out</span>
-                            <span className="menu-desc">End session</span>
-                          </div>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
+                    {/* Session Section */}
+                    <div className="dropdown-section">
+                      <div className="section-header">SESSION</div>
+                      <button onClick={handleLogout} className="menu-item danger">
+                        <LogOut size={14} />
+                        <div className="menu-text">
+                          <span className="menu-label">Sign Out</span>
+                          <span className="menu-desc">End session</span>
+                        </div>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </motion.aside>
@@ -301,7 +282,7 @@ const AppLayout = ({ user, onLogout, children }) => {
         .app-shell {
           display: flex;
           min-height: 100vh;
-          width: 100%;
+          width: 100vw;
           background: #070810;
           color: #fff;
           font-family: 'Outfit', sans-serif;
@@ -483,10 +464,6 @@ const AppLayout = ({ user, onLogout, children }) => {
           box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
         }
 
-        .sidebar.collapsed .s-user-card {
-          padding: 10px 4px;
-        }
-
         .settings-dropdown {
           position: absolute;
           bottom: 100%;
@@ -616,11 +593,9 @@ const AppLayout = ({ user, onLogout, children }) => {
         }
 
         .page-wrapper {
-          padding: 56px 60px 40px 40px; /* Aligned vertically, added right padding */
+          padding: 36px 40px;
           max-width: 1400px;
-          margin: 0 auto;
           width: 100%;
-          box-sizing: border-box;
         }
 
         .global-toast-notification {

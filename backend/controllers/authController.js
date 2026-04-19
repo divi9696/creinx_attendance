@@ -33,19 +33,6 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid Employee ID or password' });
     }
 
-    // IP Device Binding Logic Check
-    if (employee.employee_uid !== 'CRX0001') {
-      const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-
-      if (!employee.device_ip) {
-        // First time logging in -> permanently bind this IP
-        await Employee.bindDeviceIp(employee.id, clientIp);
-      } else if (employee.device_ip !== clientIp) {
-        // Trying to log in from a different IP/device
-        return res.status(403).json({ error: 'Security Block: Unauthorized device detected. You can only log into your account from your specifically registered device.' });
-      }
-    }
-
     const token = jwt.sign(
       { id: employee.id, email: employee.email, role: employee.role, employee_uid: employee.employee_uid },
       process.env.JWT_SECRET,
