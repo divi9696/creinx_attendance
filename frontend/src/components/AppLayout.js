@@ -594,8 +594,9 @@ const AppLayout = ({ user, onLogout, children }) => {
 
         .page-wrapper {
           padding: 36px 40px;
-          max-width: 1400px;
           width: 100%;
+          max-width: 1600px;
+          margin: 0 auto;
         }
 
         .global-toast-notification {
@@ -666,14 +667,54 @@ const AppLayout = ({ user, onLogout, children }) => {
         }
 
         /* ─── Responsive ─── */
+        @media (max-width: 1024px) {
+          .page-wrapper { padding: 24px 28px; }
+        }
+
         @media (max-width: 768px) {
-          .app-shell { flex-direction: column; }
-          .sidebar { width: 100% !important; height: auto; position: relative; flex-direction: row; padding: 12px 16px; }
-          .sidebar-nav { flex-direction: row; flex: none; }
-          .sidebar-bottom { flex-direction: row; border-top: none; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 12px; }
-          .sidebar-logo { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+          .app-shell { flex-direction: column; height: 100vh; overflow: hidden; }
+          .sidebar { 
+             width: 100% !important; 
+             height: auto; 
+             position: relative; 
+             flex-direction: row; 
+             align-items: center;
+             padding: 12px 16px; 
+             border-right: none;
+             border-bottom: 1px solid rgba(255,255,255,0.06);
+          }
+          .sidebar-nav { 
+             flex-direction: row; 
+             flex: 1; 
+             overflow-x: auto; 
+             padding: 0; 
+             margin: 0 12px;
+             /* hide scrollbar for horizontal nav */
+             scrollbar-width: none;
+             -ms-overflow-style: none;
+          }
+          .sidebar-nav::-webkit-scrollbar { display: none; }
+          .s-nav-item { padding: 8px 12px; }
+          .s-nav-label { display: none; } /* Show only icons on mobile nav saves space */
+          .active-pill { bottom: -2px; right: 50%; transform: translateX(50%); top: auto; }
+          .sidebar-bottom { flex-direction: row; border-top: none; padding: 0; position: static; }
+          .s-user-card { padding: 6px; border: none; background: transparent; }
+          .s-user-info { display: none !important; }
+          .s-settings-btn { width: 36px; height: 36px; }
+          .sidebar-logo { border-bottom: none; margin-bottom: 0; padding: 0; flex: none; }
           .role-badge-wrap { display: none; }
+          .main-content { height: calc(100vh - 70px); overflow-y: auto; }
           .page-wrapper { padding: 20px 16px; }
+          
+          /* Settings dropdown adjustment for mobile */
+          .settings-dropdown {
+             right: 16px; left: auto; top: 70px; bottom: auto; min-width: 200px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .page-wrapper { padding: 16px 12px; }
+          .s-nav-item { padding: 8px 10px; }
         }
       `}</style>
     </div>
