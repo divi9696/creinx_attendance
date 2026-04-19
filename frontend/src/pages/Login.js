@@ -15,18 +15,6 @@ const Login = ({ onLoginSuccess }) => {
   const [notVerified, setNotVerified] = useState(false); // account activation needed
   const navigate = useNavigate();
 
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-
-  const handleMouseMove = (e) => {
-    const card = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - card.left;
-    const y = e.clientY - card.top;
-    setRotateX((y - card.height / 2) / 20);
-    setRotateY((card.width / 2 - x) / 20);
-  };
-  const handleMouseLeave = () => { setRotateX(0); setRotateY(0); };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -65,25 +53,21 @@ const Login = ({ onLoginSuccess }) => {
         <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }} transition={{ duration: 5, repeat: Infinity }} className="bg-glow" />
       </div>
 
-      <motion.div className="login-perspective" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} style={{ perspective: 1000 }}>
-        <motion.div
-          className="login-card-layered"
-          style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
-          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-        >
+      <div className="login-perspective">
+        <div className="login-card-layered">
           {/* Logo */}
           <div className="card-header-premium">
-            <motion.div style={{ transform: 'translateZ(50px)' }} className="logo-container-3d">
+            <div className="logo-container">
               <img src="/logo.png" alt="Creinx" className="logo-main" />
-            </motion.div>
-            <motion.div style={{ transform: 'translateZ(30px)' }}>
+            </div>
+            <div>
               <p className="auth-label">SECURE AUTHENTICATION</p>
-            </motion.div>
+            </div>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="auth-form-3d" style={{ transform: 'translateZ(40px)' }}>
-            <div className="input-group-3d">
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="input-group">
               <label>Employee ID</label>
               <div className="input-field">
                 <IdCard size={18} className="field-icon" />
@@ -99,7 +83,7 @@ const Login = ({ onLoginSuccess }) => {
               </div>
             </div>
 
-            <div className="input-group-3d">
+            <div className="input-group">
               <label>Security Key</label>
               <div className="input-field">
                 <Lock size={18} className="field-icon" />
@@ -167,8 +151,8 @@ const Login = ({ onLoginSuccess }) => {
               </button>
             </div>
           </form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <style>{`
         .login-footer-links {
