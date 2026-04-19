@@ -82,7 +82,7 @@ const EmployeeDashboard = () => {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="emp-column"
+              className="emp-grid"
             >
               {/* Leave Request Card */}
               <motion.div variants={cardVariants} className="emp-card">

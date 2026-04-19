@@ -148,7 +148,7 @@ const Dashboards = () => {
       </motion.div>
           </motion.div>
         ) : activeTab === 'leave' ? (
-          <motion.div key="leave" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="adm-column">
+          <motion.div key="leave" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="emp-grid">
             <motion.div className="emp-card adm-section-card">
               <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="adm-card-title">
