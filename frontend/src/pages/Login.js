@@ -22,9 +22,14 @@ const Login = ({ onLoginSuccess }) => {
     setNotVerified(false);
 
     try {
+      const uid = employeeUid.trim().toUpperCase();
+      // Retrieve the device token stored at activation for this employee
+      const deviceToken = localStorage.getItem(`crx_device_token_${uid}`) || null;
+
       const response = await axios.post(`${API_URL}/auth/login`, {
-        employee_uid: employeeUid.trim().toUpperCase(),
-        password
+        employee_uid: uid,
+        password,
+        device_token: deviceToken
       });
       const { token, user } = response.data;
       localStorage.setItem('token', token);

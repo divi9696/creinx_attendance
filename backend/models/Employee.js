@@ -110,6 +110,24 @@ class Employee {
     return result.affectedRows > 0;
   }
 
+  // Bind a unique device token at activation time
+  static async bindDeviceToken(employeeId, token) {
+    const [result] = await db.execute(
+      'UPDATE employees SET device_token = ? WHERE id = ?',
+      [token, employeeId]
+    );
+    return result.affectedRows > 0;
+  }
+
+  // Clear device token binding (admin reset — allows re-binding from new device)
+  static async clearDeviceToken(employeeId) {
+    const [result] = await db.execute(
+      'UPDATE employees SET device_token = NULL WHERE id = ?',
+      [employeeId]
+    );
+    return result.affectedRows > 0;
+  }
+
   // Clear device IP binding (admin action — allows employee to re-bind from new device)
   static async clearDeviceIp(employeeId) {
     const [result] = await db.execute(

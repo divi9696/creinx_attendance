@@ -30,6 +30,7 @@ const initializeDatabase = async () => {
       `ALTER TABLE employees ADD COLUMN employee_uid VARCHAR(20) UNIQUE`,
       `ALTER TABLE employees ADD COLUMN mobile VARCHAR(15)`,
       `ALTER TABLE employees ADD COLUMN is_verified TINYINT(1) DEFAULT 0`,
+      `ALTER TABLE employees ADD COLUMN device_token VARCHAR(64) DEFAULT NULL`,
     ];
     for (const sql of alterColumns) {
       try { await db.query(sql); } catch (e) { /* column already exists */ }

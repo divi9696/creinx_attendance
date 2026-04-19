@@ -296,7 +296,7 @@ exports.getLatePermissions = async (req, res) => {
   }
 };
 
-// ─── RESET EMPLOYEE DEVICE IP (admin action) ──────────────────────────────
+// ─── RESET EMPLOYEE DEVICE TOKEN (admin action) ───────────────────────────
 exports.resetDeviceIp = async (req, res) => {
   try {
     const { id } = req.params;
@@ -314,9 +314,11 @@ exports.resetDeviceIp = async (req, res) => {
       return res.status(400).json({ error: 'CRX0001 does not have a device binding to reset.' });
     }
 
+    // Clear both token and legacy IP
+    await Employee.clearDeviceToken(id);
     await Employee.clearDeviceIp(id);
     res.json({
-      message: `Device IP binding cleared for ${employee.name} (${employee.employee_uid}). They can now re-activate from a new device.`
+      message: `Device binding cleared for ${employee.name} (${employee.employee_uid}). They must re-activate from their device.`
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

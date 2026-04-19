@@ -1,35 +1,10 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const Employee = require('../models/Employee');
 const OTP = require('../models/OTP');
 const emailService = require('../utils/emailService');
 const { validatePassword, checkRequirements } = require('../utils/passwordValidator');
-
-// ─── Extract real client IP (works behind Vercel/proxy) ───────────────────
-const getClientIp = (req) => {
-  // x-forwarded-for can be a comma-separated list: client, proxy1, proxy2
-  const forwarded = req.headers['x-forwarded-for'];
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-  return req.socket?.remoteAddress || req.connection?.remoteAddress || 'unknown';
-};
-
-// ─── Subnet match: compare first 3 octets (/24) ────────────────────────────
-// Handles dynamic IPs that change slightly within the same ISP/network block
-const isSameSubnet = (storedIp, clientIp) => {
-  if (!storedIp || !clientIp) return false;
-  // Strip IPv6-to-IPv4 prefix  e.g. ::ffff:192.168.1.1 → 192.168.1.1
-  const clean = (ip) => ip.replace(/^::ffff:/, '');
-  const a = clean(storedIp).split('.');
-  const b = clean(clientIp).split('.');
-  if (a.length !== 4 || b.length !== 4) {
-    // IPv6 or unknown format — fall back to exact match
-    return clean(storedIp) === clean(clientIp);
-  }
-  // Compare first 3 octets (e.g. 103.45.67.x)
-  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
-};
 
 // ─── LOGIN (by Employee UID) ───────────────────────────────────────────────
 exports.login = async (req, res) => {
@@ -59,21 +34,27 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid Employee ID or password' });
     }
 
-    // ── Device IP Restriction (exempt: CRX0001) ────────────────────────────
+    // ── Device Token Restriction (exempt: CRX0001) ─────────────────────────
+    // Token is bound to the specific browser/device at activation time.
+    // It prevents any other device — even on the same network — from logging in.
     if (employee.employee_uid !== 'CRX0001') {
-      const clientIp = getClientIp(req);
-      if (employee.device_ip) {
-        // Account has a registered device — enforce subnet-level check
-        if (!isSameSubnet(employee.device_ip, clientIp)) {
+      const submittedToken = req.body.device_token || req.headers['x-device-token'] || null;
+
+      if (employee.device_token) {
+        // Account has an activated device token — must match exactly
+        if (!submittedToken || employee.device_token !== submittedToken) {
           return res.status(403).json({
             error: 'Security Block: Unauthorized device detected. You can only log into your account from your specifically registered device.',
             code: 'DEVICE_MISMATCH'
           });
         }
       } else {
-        // device_ip is NULL (admin reset it, or old account) — bind current IP now
-        await Employee.bindDeviceIp(employee.id, clientIp);
-        console.log(`[Auth] First-time device bind for ${employee.employee_uid}: ${clientIp}`);
+        // No device_token yet (account activated before this system existed).
+        // Bind whoever logs in first — they'll own this account going forward.
+        if (submittedToken) {
+          await Employee.bindDeviceToken(employee.id, submittedToken);
+          console.log(`[Auth] First-time device token bound for ${employee.employee_uid}`);
+        }
       }
     }
 
@@ -181,12 +162,15 @@ exports.activateAccount = async (req, res) => {
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
     await Employee.activateAccount(employee.id, hashedPassword);
 
-    // ── Bind this device IP permanently at activation time ─────────────────
-    const activationIp = getClientIp(req);
-    await Employee.bindDeviceIp(employee.id, activationIp);
-    console.log(`Device IP ${activationIp} bound to employee ${employee.employee_uid} at activation.`);
+    // ── Generate and bind a unique device token to this browser/device ──────
+    const deviceToken = crypto.randomBytes(32).toString('hex');
+    await Employee.bindDeviceToken(employee.id, deviceToken);
+    console.log(`[Auth] Device token generated and bound for ${employee.employee_uid}`);
 
-    res.json({ message: 'Account activated successfully! You can now login.' });
+    res.json({
+      message: 'Account activated successfully! You can now login.',
+      device_token: deviceToken    // Frontend stores this in localStorage
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

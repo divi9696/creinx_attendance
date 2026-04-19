@@ -115,12 +115,18 @@ const OTPAuthPage = () => {
       const endpoint = isActivation
         ? `${API_URL}/auth/activate`
         : `${API_URL}/auth/reset-password`;
-      await axios.post(endpoint, {
+      const response = await axios.post(endpoint, {
         employee_uid: uid,
         otp,
         newPassword,
         confirmPassword
       });
+
+      // On activation, backend returns a unique device_token — store it permanently
+      if (isActivation && response.data.device_token) {
+        localStorage.setItem(`crx_device_token_${uid}`, response.data.device_token);
+      }
+
       setDone(true);
     } catch (err) {
       const data = err.response?.data;
