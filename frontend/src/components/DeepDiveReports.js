@@ -4,8 +4,10 @@ import API_URL from '../apiConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Clock, Calendar, ChevronDown, ChevronUp, Loader2,
-  Building, Home, FileText, BarChart2
+  Building, Home, FileText, BarChart2, FileSpreadsheet
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const DeepDiveReports = () => {
   const [employees, setEmployees] = useState([]);
@@ -42,6 +44,61 @@ const DeepDiveReports = () => {
       setDossier(res.data);
     } catch (e) { console.error(e); }
     finally { setDossierLoading(false); }
+  };
+
+  const exportToPDF = () => {
+    if (!dossier) return;
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text(`Employee Dossier: ${selectedEmp.name}`, 14, 20);
+    doc.setFontSize(10);
+    doc.text(`ID: ${selectedEmp.employee_uid} | Dept: ${selectedEmp.department || 'N/A'}`, 14, 28);
+    
+    // Attendance Table
+    doc.text('1. ATTENDANCE LOGS', 14, 40);
+    const attColumns = ["Date", "In", "Out", "Mode", "IP"];
+    const attRows = (dossier.attendance || []).map(r => [
+      fmtDate(r.check_in),
+      fmt(r.check_in),
+      fmt(r.check_out),
+      typeLabel(r.attendance_type),
+      r.ip_address || '—'
+    ]);
+    doc.autoTable({ head: [attColumns], body: attRows, startY: 45, theme: 'striped' });
+
+    // Monthly Report
+    const finalY = doc.lastAutoTable.finalY + 15;
+    doc.text('2. MONTHLY SUMMARY', 14, finalY);
+    const mthColumns = ["Month", "Office", "Remote", "Leave", "Total"];
+    const mthRows = monthlyReport(dossier.attendance).map(([m, s]) => [m, s.office, s.home, s.leave, s.total]);
+    doc.autoTable({ head: [mthColumns], body: mthRows, startY: finalY + 5, theme: 'grid' });
+
+    doc.save(`dossier-${selectedEmp.name.replace(/\s+/g, '-')}.pdf`);
+  };
+
+  const exportToExcel = () => {
+    if (!dossier) return;
+    const headers = ['Log Date', 'Check In', 'Check Out', 'Mode', 'IP Address'];
+    const rows = (dossier.attendance || []).map(r => [
+      fmtDate(r.check_in),
+      fmt(r.check_in),
+      fmt(r.check_out),
+      typeLabel(r.attendance_type),
+      r.ip_address || '—'
+    ]);
+    const csvContent = [
+      [`Employee: ${selectedEmp.name}`, `UID: ${selectedEmp.employee_uid}`],
+      [],
+      headers, 
+      ...rows
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `dossier-${selectedEmp.employee_uid}.xls`);
+    link.click();
   };
 
   const fmt = (dt) => {
@@ -120,6 +177,10 @@ const DeepDiveReports = () => {
                     <div className="dossier-loading"><Loader2 size={20} className="spinner-icon" /> Loading detailed intelligence...</div>
                   ) : dossier ? (
                     <div className="dossier-content">
+                      <div className="dossier-actions-row">
+                        <button className="d-btn pdf" onClick={exportToPDF}><FileText size={14} /> EXPORT PDF</button>
+                        <button className="d-btn excel" onClick={exportToExcel}><FileSpreadsheet size={14} /> EXPORT EXCEL</button>
+                      </div>
                       <div className="dossier-tabs">
                         {['attendance', 'monthly', 'leaves'].map(tab => (
                           <button
@@ -272,6 +333,17 @@ const DeepDiveReports = () => {
         }
         .d-tab:hover { background: rgba(255,255,255,0.05); color: #fff; }
         .d-tab.active { background: rgba(0,210,255,0.1); color: #4deaff; border-color: rgba(0,210,255,0.2); }
+
+        .dossier-actions-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .d-btn {
+          display: flex; align-items: center; gap: 8px;
+          padding: 8px 16px; border-radius: 8px; border: 1px solid transparent;
+          font-size: 0.65rem; font-weight: 800; cursor: pointer; transition: 0.3s;
+        }
+        .d-btn.pdf { background: rgba(239,68,68,0.08); color: #ef4444; border-color: rgba(239,68,68,0.2); }
+        .d-btn.pdf:hover { background: #ef4444; color: #fff; }
+        .d-btn.excel { background: rgba(34,197,94,0.08); color: #22c55e; border-color: rgba(34,197,94,0.2); }
+        .d-btn.excel:hover { background: #22c55e; color: #fff; }
 
         .log-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
         .log-table { width: 100%; border-collapse: collapse; }

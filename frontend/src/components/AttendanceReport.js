@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
-import { Download, Search } from 'lucide-react';
+import { Download, Search, FileText, FileSpreadsheet } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const AttendanceReport = () => {
   const [report, setReport] = useState([]);
@@ -42,11 +44,35 @@ const AttendanceReport = () => {
     return <span className={`report-badge ${badge.class}`}>{badge.label}</span>;
   };
 
-  const exportToCSV = () => {
-    if (report.length === 0) {
-      alert('No data to export');
-      return;
-    }
+  const exportToPDF = () => {
+    if (report.length === 0) { alert('No data to export'); return; }
+    const doc = new jsPDF();
+    doc.text('Creinx Attendance Report', 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Period: ${dateRange.startDate} to ${dateRange.endDate}`, 14, 22);
+    
+    const tableColumn = ["Employee", "Email", "Date", "Time", "Mode", "IP Address"];
+    const tableRows = report.map(log => [
+      log.employee_name,
+      log.email,
+      new Date(log.check_in).toLocaleDateString(),
+      new Date(log.check_in).toLocaleTimeString(),
+      log.attendance_type.replace('work_', '').toUpperCase(),
+      log.ip_address || '0.0.0.0'
+    ]);
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 30,
+      theme: 'grid',
+      headStyles: { fillColor: [0, 86, 255] }
+    });
+    doc.save(`creinx-attendance-${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const exportToExcel = () => {
+    if (report.length === 0) { alert('No data to export'); return; }
     const headers = ['Employee Name', 'Email', 'Check-in Date', 'Check-in Time', 'Work Mode', 'IP Address'];
     const rows = report.map(log => [
       log.employee_name,
@@ -56,13 +82,16 @@ const AttendanceReport = () => {
       log.attendance_type,
       log.ip_address || '0.0.0.0'
     ]);
-    const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `attendance-report-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
+    const csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `creinx-report-${new Date().toISOString().split('T')[0]}.xls`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const filteredReport = report.filter(log =>
@@ -105,9 +134,13 @@ const AttendanceReport = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="export-btn" onClick={exportToCSV}>
-            <Download size={16} />
-            <span>Export CSV</span>
+          <button className="export-btn pdf" onClick={exportToPDF}>
+            <FileText size={16} />
+            <span>Export PDF</span>
+          </button>
+          <button className="export-btn excel" onClick={exportToExcel}>
+            <FileSpreadsheet size={16} />
+            <span>Export Excel</span>
           </button>
         </div>
       </div>
@@ -235,10 +268,29 @@ const AttendanceReport = () => {
         }
 
         .export-btn:hover {
-          background: linear-gradient(135deg, rgba(77, 234, 255, 0.25), rgba(77, 234, 255, 0.1));
-          border-color: rgba(77, 234, 255, 0.5);
-          box-shadow: 0 8px 24px rgba(77, 234, 255, 0.15);
           transform: translateY(-2px);
+        }
+
+        .export-btn.pdf {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+          border-color: rgba(239, 68, 68, 0.3);
+          color: #ef4444;
+        }
+        .export-btn.pdf:hover {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.1));
+          border-color: #ef4444;
+          box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
+        }
+
+        .export-btn.excel {
+          background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+          border-color: rgba(34, 197, 94, 0.3);
+          color: #22c55e;
+        }
+        .export-btn.excel:hover {
+          background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(34, 197, 94, 0.1));
+          border-color: #22c55e;
+          box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
         }
 
         .premium-table { width: 100%; border-collapse: collapse; }
