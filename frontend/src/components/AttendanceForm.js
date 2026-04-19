@@ -335,14 +335,17 @@ const AttendanceForm = ({ onSuccess }) => {
         .success-alert-haptic { background: rgba(34,197,94,0.1); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
 
         .mark-action-btn-elite {
-          height: 60px; background: var(--primary-glow);
+          height: 60px; 
+          background: linear-gradient(135deg, #0056ff, #00d2ff);
           border: none; border-radius: 16px;
-          color: #000; font-weight: 800; font-size: 0.9rem;
-          letter-spacing: 1.5px; cursor: pointer;
+          color: #fff; font-weight: 800; font-size: 0.95rem;
+          letter-spacing: 2px; cursor: pointer;
           display: flex; align-items: center; justify-content: center; gap: 12px;
-          box-shadow: 0 10px 20px rgba(0,210,255,0.2); transition: all 0.3s ease;
+          box-shadow: 0 15px 30px rgba(0, 86, 255, 0.3); transition: all 0.3s ease;
         }
-        .mark-action-btn-elite:disabled { background: #1e293b; color: #475569; cursor: not-allowed; box-shadow: none; }
+        .mark-action-btn-elite:disabled { 
+          background: #1e293b; color: #64748b; cursor: not-allowed; box-shadow: none; 
+        }
 
         .checkout-btn-elite {
           height: 60px; background: rgba(239,68,68,0.15);
