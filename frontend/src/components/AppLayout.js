@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import API_URL from '../apiConfig';
+import LiveClock from './LiveClock';
 
 const AppLayout = ({ user, onLogout, children }) => {
   const location = useLocation();
@@ -265,6 +266,9 @@ const AppLayout = ({ user, onLogout, children }) => {
 
       {/* ─── MAIN CONTENT ─── */}
       <main className="main-content">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '24px 40px 0', width: '100%', boxSizing: 'border-box' }}>
+          <LiveClock />
+        </div>
         <motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 12 }}

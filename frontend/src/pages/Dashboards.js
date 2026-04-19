@@ -78,9 +78,6 @@ const Dashboards = () => {
       >
         <div>
           <h1 className="adm-title">Dashboard</h1>
-          <p className="adm-sub">
-            {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </p>
         </div>
         <motion.button
           whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
