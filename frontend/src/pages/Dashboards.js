@@ -77,7 +77,7 @@ const Dashboards = () => {
         className="adm-header"
       >
         <div>
-          <h1 className="adm-title">Intelligence Hub</h1>
+          <h1 className="adm-title">Dashboard</h1>
           <p className="adm-sub">
             {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
@@ -104,7 +104,7 @@ const Dashboards = () => {
           className={`emp-tab ${activeTab === 'intelligence' ? 'active' : ''}`}
           onClick={() => setActiveTab('intelligence')}
         >
-          <Activity size={15} /> Intelligence Hub
+          <Activity size={15} /> Dashboard
         </button>
         <button
           className={`emp-tab ${activeTab === 'leave' ? 'active' : ''}`}

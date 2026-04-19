@@ -50,8 +50,8 @@ const AppLayout = ({ user, onLogout, children }) => {
   };
 
   const adminNav = [
-    { to: '/admin/dashboards', icon: <LayoutDashboard size={20} />, label: 'Intelligence Hub' },
-    { to: '/admin/employees', icon: <Users size={20} />, label: 'Workforce Matrix' },
+    { to: '/admin/dashboards', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+    { to: '/admin/employees', icon: <Users size={20} />, label: 'Staff Management' },
     { to: '/admin/reports', icon: <FileBarChart2 size={20} />, label: 'Archive & Logs' },
     { to: '/notifications', icon: <Bell size={20} />, label: 'Announcements' },
   ];
