@@ -73,25 +73,40 @@ const AttendanceReport = () => {
 
   const exportToExcel = () => {
     if (report.length === 0) { alert('No data to export'); return; }
-    const headers = ['Employee Name', 'Email', 'Check-in Date', 'Check-in Time', 'Work Mode', 'IP Address'];
+    
+    // Construct a Structural XML for Excel
+    const header = ['Employee Name', 'Email', 'Check-in Date', 'Check-in Time', 'Work Mode', 'IP Address'];
     const rows = report.map(log => [
       log.employee_name,
       log.email,
       new Date(log.check_in).toLocaleDateString(),
       new Date(log.check_in).toLocaleTimeString(),
-      log.attendance_type,
+      log.attendance_type.replace('work_', '').toUpperCase(),
       log.ip_address || '0.0.0.0'
     ]);
-    const csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+
+    let xml = `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Worksheet ss:Name="Attendance"><Table>`;
+    
+    // Header Row
+    xml += '<Row>';
+    header.forEach(h => xml += `<Cell><Data ss:Type="String">${h}</Data></Cell>`);
+    xml += '</Row>';
+
+    // Data Rows
+    rows.forEach(row => {
+      xml += '<Row>';
+      row.forEach(cell => xml += `<Cell><Data ss:Type="String">${cell}</Data></Cell>`);
+      xml += '</Row>';
+    });
+
+    xml += '</Table></Worksheet></Workbook>';
+
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `creinx-report-${new Date().toISOString().split('T')[0]}.xls`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
+    link.href = url;
+    link.download = `creinx-attendance-structural-${new Date().toISOString().split('T')[0]}.xls`;
     link.click();
-    document.body.removeChild(link);
   };
 
   const filteredReport = report.filter(log =>

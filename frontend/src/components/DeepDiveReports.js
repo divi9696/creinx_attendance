@@ -78,26 +78,42 @@ const DeepDiveReports = () => {
 
   const exportToExcel = () => {
     if (!dossier) return;
-    const headers = ['Log Date', 'Check In', 'Check Out', 'Mode', 'IP Address'];
+    const header = ['Log Date', 'Check In', 'Check Out', 'Mode', 'IP Address'];
     const rows = (dossier.attendance || []).map(r => [
       fmtDate(r.check_in),
       fmt(r.check_in),
       fmt(r.check_out),
-      typeLabel(r.attendance_type),
+      typeLabel(r.attendance_type).toUpperCase(),
       r.ip_address || '—'
     ]);
-    const csvContent = [
-      [`Employee: ${selectedEmp.name}`, `UID: ${selectedEmp.employee_uid}`],
-      [],
-      headers, 
-      ...rows
-    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    let xml = `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Worksheet ss:Name="Dossier"><Table>`;
     
-    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    // Metadata rows
+    xml += `<Row><Cell ss:StyleID="s62"><Data ss:Type="String">Employee: ${selectedEmp.name}</Data></Cell></Row>`;
+    xml += `<Row><Cell ss:StyleID="s62"><Data ss:Type="String">UID: ${selectedEmp.employee_uid}</Data></Cell></Row>`;
+    xml += `<Row><Cell ss:StyleID="s62"><Data ss:Type="String">Department: ${selectedEmp.department || 'N/A'}</Data></Cell></Row>`;
+    xml += '<Row></Row>';
+
+    // Header row
+    xml += '<Row>';
+    header.forEach(h => xml += `<Cell><Data ss:Type="String">${h}</Data></Cell>`);
+    xml += '</Row>';
+
+    // Data rows
+    rows.forEach(row => {
+      xml += '<Row>';
+      row.forEach(cell => xml += `<Cell><Data ss:Type="String">${cell}</Data></Cell>`);
+      xml += '</Row>';
+    });
+
+    xml += '</Table></Worksheet></Workbook>';
+
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `dossier-${selectedEmp.employee_uid}.xls`);
+    link.href = url;
+    link.download = `dossier-structural-${selectedEmp.employee_uid}.xls`;
     link.click();
   };
 
