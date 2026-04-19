@@ -61,7 +61,7 @@ const AdminStaffPanel = () => {
       await axios.post(`${API_URL}/admin/leave/${leaveId}/review`, { status }, { headers: headers() });
       setReviewMsg(`Leave ${status} successfully`);
       fetchPendingLeaves();
-      if (dossier) fetchDossier(selectedEmp);
+
       setTimeout(() => setReviewMsg(''), 3000);
     } catch (e) { setReviewMsg('Review action failed'); }
   };
