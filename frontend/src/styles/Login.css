@@ -1,7 +1,10 @@
 /* NEXT-GEN 3D INTERFACE - VERSION 5.0 */
 .login-universe {
-  min-height: 100vh;
-  width: 100%; /* Changed from 100vw to prevent horizontal scrollbar overflow */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   margin: 0;
   padding: 0;
   background: radial-gradient(circle at center, #0a0c14 0%, #030406 100%);
@@ -9,7 +12,6 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  position: relative;
   font-family: 'Outfit', sans-serif;
 }
 
@@ -65,12 +67,12 @@
 }
 
 .login-card-layered {
-  width: 480px;
-  padding: 60px 50px;
+  width: 600px;
+  padding: 70px 60px;
   background: rgba(13, 15, 22, 0.85);
   backdrop-filter: blur(25px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 35px;
+  border-radius: 40px;
   box-shadow: 0 50px 100px rgba(0, 0, 0, 0.7);
   text-align: center;
 }
@@ -86,11 +88,11 @@
 }
 
 .auth-label {
-  font-size: 0.65rem;
-  letter-spacing: 4px;
+  font-size: 0.8rem;
+  letter-spacing: 5px;
   font-weight: 900;
   color: #00d2ff;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 /* 🖋️ Elite Form Styling */
@@ -128,13 +130,13 @@
 
 .input-field input {
   width: 100%;
-  height: 56px;
+  height: 64px;
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 0 50px;
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   transition: all 0.3s ease;
 }
 
@@ -181,16 +183,16 @@
 
 /* ⚡ Premium Button */
 .login-submit-premium {
-  height: 60px;
+  height: 68px;
   background: linear-gradient(135deg, #0056ff, #00d2ff);
   border: none;
   border-radius: 18px;
   color: white;
   font-weight: 800;
-  font-size: 0.9rem;
-  letter-spacing: 2px;
+  font-size: 1.1rem;
+  letter-spacing: 3px;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 15px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 15px 30px rgba(0, 86, 255, 0.3);
