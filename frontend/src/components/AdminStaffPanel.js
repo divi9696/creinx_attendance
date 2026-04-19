@@ -5,17 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Clock, Calendar, CheckCircle, XCircle,
   ChevronDown, ChevronUp, Loader2, AlertTriangle,
-  Building, Home, FileText, BarChart2, Check, X, ShieldAlert
+  Building, Home, FileText, Check, X, ShieldAlert
 } from 'lucide-react';
 
 const AdminStaffPanel = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedEmp, setSelectedEmp] = useState(null);
-  const [dossier, setDossier] = useState(null);
-  const [dossierLoading, setDossierLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('attendance');
-  const [showAllLogs, setShowAllLogs] = useState(false);
   const [liveToday, setLiveToday] = useState([]);
   const [pendingLeaves, setPendingLeaves] = useState([]);
   const [reviewMsg, setReviewMsg] = useState('');
@@ -58,18 +54,7 @@ const AdminStaffPanel = () => {
     } catch (e) { console.error(e); }
   };
 
-  const fetchDossier = async (emp) => {
-    if (selectedEmp?.id === emp.id) { setSelectedEmp(null); setDossier(null); return; }
-    setSelectedEmp(emp);
-    setDossierLoading(true);
-    setDossier(null);
-    setShowAllLogs(false);
-    try {
-      const res = await axios.get(`${API_URL}/admin/employee/${emp.id}/full-report`, { headers: headers() });
-      setDossier(res.data);
-    } catch (e) { console.error(e); }
-    finally { setDossierLoading(false); }
-  };
+
 
   const reviewLeave = async (leaveId, status) => {
     try {
@@ -131,20 +116,7 @@ const AdminStaffPanel = () => {
     return '#fbbf24';
   };
 
-  // Monthly summary from dossier
-  const monthlyReport = (attendance) => {
-    const grouped = {};
-    (attendance || []).forEach(rec => {
-      const d = new Date(rec.check_in);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      if (!grouped[key]) grouped[key] = { office: 0, home: 0, leave: 0, total: 0 };
-      if (rec.attendance_type === 'work_office') grouped[key].office++;
-      else if (rec.attendance_type === 'work_home') grouped[key].home++;
-      else grouped[key].leave++;
-      grouped[key].total++;
-    });
-    return Object.entries(grouped).sort((a, b) => b[0].localeCompare(a[0]));
-  };
+
 
   return (
     <div className="staff-panel">
@@ -294,159 +266,7 @@ const AdminStaffPanel = () => {
         </div>
       </div>
 
-      {/* === EMPLOYEE DOSSIER ACCESS === */}
-      <div className="panel-section">
-        <div className="section-title-row">
-          <div className="section-icon-box"><Users size={18} /></div>
-          <h3>Personnel Deep-Dive Reports</h3>
-        </div>
 
-        <div className="emp-dossier-list">
-          {employees.map((emp, idx) => (
-            <div key={emp.id} className="emp-dossier-block">
-              <motion.div
-                whileHover={{ x: 3 }}
-                className={`emp-dossier-header ${selectedEmp?.id === emp.id ? 'active' : ''}`}
-                onClick={() => fetchDossier(emp)}
-              >
-                <div className="emp-dossier-avatar">{emp.name[0]}</div>
-                <div className="emp-dossier-meta">
-                  <span className="d-name">{emp.name}</span>
-                  <span className="d-role">{emp.job_role || 'Staff'} · {emp.department || 'Main Ops'}</span>
-                </div>
-                <div className="d-action-icon">
-                  {selectedEmp?.id === emp.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                </div>
-              </motion.div>
-
-              <AnimatePresence>
-                {selectedEmp?.id === emp.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="dossier-expand"
-                  >
-                    {dossierLoading ? (
-                      <div className="dossier-loading"><Loader2 size={20} className="spinner-icon" /> Loading records...</div>
-                    ) : dossier ? (
-                      <div className="dossier-content">
-                        {/* Tab Switcher */}
-                        <div className="dossier-tabs">
-                          {['attendance', 'monthly', 'leaves'].map(tab => (
-                            <button
-                              key={tab}
-                              onClick={() => setActiveTab(tab)}
-                              className={`d-tab ${activeTab === tab ? 'active' : ''}`}
-                            >
-                              {tab === 'attendance' && <><Clock size={13} /> ATTENDANCE LOGS</>}
-                              {tab === 'monthly' && <><BarChart2 size={13} /> MONTHLY REPORT</>}
-                              {tab === 'leaves' && <><FileText size={13} /> LEAVE HISTORY</>}
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* Attendance Logs Tab */}
-                        {activeTab === 'attendance' && (
-                          <div className="log-table-wrap">
-                            <table className="log-table">
-                              <thead>
-                                <tr>
-                                  <th>DATE</th>
-                                  <th>CHECK-IN</th>
-                                  <th>CHECK-OUT</th>
-                                  <th>HOURS</th>
-                                  <th>TYPE</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(showAllLogs 
-                                  ? (dossier.attendance || []) 
-                                  : (dossier.attendance || []).slice(0, 5)
-                                ).map((rec, i) => {
-                                  const hours = rec.check_out
-                                    ? ((new Date(rec.check_out) - new Date(rec.check_in)) / 3600000).toFixed(1)
-                                    : null;
-                                  return (
-                                    <tr key={i} className="log-row">
-                                      <td>{fmtDate(rec.check_in)}</td>
-                                      <td><span className="t-in">{fmt(rec.check_in)}</span></td>
-                                      <td><span className="t-out">{fmt(rec.check_out)}</span></td>
-                                      <td><span className={hours ? 't-hrs' : 't-na'}>{hours ? `${hours}h` : 'Active'}</span></td>
-                                      <td>
-                                        <span className="t-type" style={{ color: typeColor(rec.attendance_type) }}>
-                                          {typeIcon(rec.attendance_type)} {typeLabel(rec.attendance_type)}
-                                        </span>
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                            {dossier.attendance?.length === 0 && <div className="empty-state">No attendance records found.</div>}
-                            {!showAllLogs && dossier.attendance?.length > 5 && (
-                              <div className="view-more-container">
-                                <button onClick={() => setShowAllLogs(true)} className="view-more-btn">
-                                  View More <ChevronDown size={14} />
-                                </button>
-                              </div>
-                            )}
-                            {showAllLogs && dossier.attendance?.length > 5 && (
-                              <div className="view-more-container">
-                                <button onClick={() => setShowAllLogs(false)} className="view-more-btn">
-                                  View Less <ChevronUp size={14} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Monthly Report Tab */}
-                        {activeTab === 'monthly' && (
-                          <div className="monthly-grid">
-                            {monthlyReport(dossier.attendance).map(([month, stats]) => (
-                              <div key={month} className="month-card">
-                                <div className="month-label">{new Date(month + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}</div>
-                                <div className="month-stats">
-                                  <div className="m-stat office"><Building size={12} />{stats.office} Office</div>
-                                  <div className="m-stat home"><Home size={12} />{stats.home} Remote</div>
-                                  <div className="m-stat leave"><FileText size={12} />{stats.leave} Leave</div>
-                                  <div className="m-stat total">TOTAL {stats.total}</div>
-                                </div>
-                              </div>
-                            ))}
-                            {dossier.attendance?.length === 0 && <div className="empty-state">No records.</div>}
-                          </div>
-                        )}
-
-                        {/* Leave History Tab */}
-                        {activeTab === 'leaves' && (
-                          <div className="leave-history">
-                            {(dossier.leaves || []).length === 0 ? (
-                              <div className="empty-state">No leave requests found.</div>
-                            ) : (
-                              (dossier.leaves || []).map((lv, i) => (
-                                <div key={i} className="lv-row">
-                                  <div className={`lv-status status-${lv.status}`}>{lv.status.toUpperCase()}</div>
-                                  <div className="lv-info">
-                                    <span>{fmtDate(lv.start_date)} → {fmtDate(lv.end_date)}</span>
-                                    <span className="lv-reason">"{lv.reason}"</span>
-                                    {lv.decline_reason && <span className="lv-decline">Decline note: {lv.decline_reason}</span>}
-                                  </div>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ) : null}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
-        </div>
-      </div>
 
       <style jsx>{`
         .staff-panel { display: flex; flex-direction: column; gap: 30px; }
