@@ -191,7 +191,7 @@ const EmployeeDashboard = () => {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 24px;
-          align-items: start;
+          align-items: stretch;
         }
 
         .emp-grid-single {

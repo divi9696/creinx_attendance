@@ -190,7 +190,7 @@ const Dashboards = () => {
           max-width: 100%;
           display: flex; 
           flex-direction: column; 
-          gap: 28px;
+          gap: 20px;
           overflow-x: hidden;
           box-sizing: border-box;
         }
@@ -303,7 +303,7 @@ const Dashboards = () => {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 24px;
-          align-items: start;
+          align-items: stretch;
         }
 
         .emp-grid-single-admin {
