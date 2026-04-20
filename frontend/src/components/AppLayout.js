@@ -540,21 +540,10 @@ const AppLayout = ({ user, onLogout, children }) => {
           z-index: 10001;
           max-height: 400px;
           overflow-y: auto;
+          overflow-x: hidden; /* Prevent horizontal scrollbar */
         }
 
-        .settings-dropdown::-webkit-scrollbar {
-          width: 5px;
-        }
 
-        .settings-dropdown::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 10px;
-        }
-
-        .settings-dropdown::-webkit-scrollbar-thumb {
-          background: rgba(0, 210, 255, 0.3);
-          border-radius: 10px;
-        }
 
         .dropdown-section {
           padding: 8px 0;
