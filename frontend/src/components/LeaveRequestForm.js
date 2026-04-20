@@ -165,7 +165,7 @@ const LeaveRequestForm = ({ onSuccess }) => {
           background: linear-gradient(135deg, rgba(10, 12, 20, 0.8), rgba(20, 30, 50, 0.6));
           border: 1px solid rgba(0, 210, 255, 0.15);
           border-radius: 18px;
-          padding: 32px;
+          padding: 28px;
           backdrop-filter: blur(20px);
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
                       inset 0 0 30px rgba(0, 210, 255, 0.03);
