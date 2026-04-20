@@ -39,19 +39,26 @@ const AttendanceForm = ({ onSuccess }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Get today's date in YYYY-MM-DD format
+      // Get today's date in YYYY-MM-DD format for direct string comparison
+      // Get today's local date in YYYY-MM-DD format
       const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
 
       const activeLeave = response.data.leaves?.find(leave => {
         if (leave.status !== 'approved') return false;
 
-        // Parse dates properly
-        const startDate = new Date(leave.start_date);
-        const endDate = new Date(leave.end_date);
+        // Parse backend dates (normalize to local YYYY-MM-DD)
+        const s = new Date(leave.start_date);
+        const startStr = `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, '0')}-${String(s.getDate()).padStart(2, '0')}`;
+        
+        const e = new Date(leave.end_date);
+        const endStr = `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
 
-        // Check if today falls within the leave range
-        return today >= startDate && today <= endDate;
+        // Check if today falls within the range
+        return todayStr >= startStr && todayStr <= endStr;
       });
 
       if (activeLeave) {
