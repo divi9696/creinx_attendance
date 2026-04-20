@@ -90,7 +90,7 @@ const AppLayout = ({ user, onLogout, children }) => {
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="sidebar"
       >
-        <div className="sidebar-logo-premium" style={{ justifyContent: 'center', padding: '32px 14px' }}>
+        <div className="sidebar-logo-premium" style={{ justifyContent: 'center', padding: '20px 14px' }}>
           <div className="logo-glow" />
           <img src="/logo.png" alt="Creinx" className="s-logo-main" style={{ width: '210px', height: 'auto', maxWidth: '100%' }} />
           <button className="collapse-btn-minimal" onClick={() => setCollapsed(!collapsed)}>
