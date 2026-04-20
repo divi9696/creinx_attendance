@@ -37,7 +37,7 @@ const EmployeeDashboard = () => {
         className="emp-page-header"
       >
         <div>
-          <h1 className="emp-page-title">{greeting}, {user?.name?.split(' ')[0] || 'User'} 👋</h1>
+          <h1 className="emp-page-title">{greeting}, {user?.name?.split(' ')[0] || 'User'}</h1>
         </div>
       </motion.div>
 

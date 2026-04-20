@@ -84,150 +84,140 @@ const AppLayout = ({ user, onLogout, children }) => {
   return (
     <div className="app-shell">
 
-      {/* ─── SIDEBAR ─── */}
-      <motion.aside
-        animate={{ width: collapsed ? 72 : 260 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="sidebar"
-      >
-        <div className="sidebar-logo-premium">
-          <div className="logo-glow" />
-          <img src="/logo.png" alt="Creinx" className="s-logo-main" />
-          <button className="collapse-btn-minimal" onClick={() => setCollapsed(!collapsed)}>
-            {collapsed ? <ChevronRight size={14} /> : <X size={14} />}
-          </button>
-        </div>
-
-        {/* ─── Role Badge ─── */}
-        {!collapsed && (
-          <div className="role-badge-wrap">
-            <div className={`role-badge ${user?.role}`}>
-              {user?.role === 'admin' ? '🛡 ADMIN' : '👤 EMPLOYEE'}
-            </div>
+      {/* ─── SIDEBAR (Admin Only) ─── */}
+      {user?.role === 'admin' && (
+        <motion.aside
+          animate={{ width: collapsed ? 72 : 260 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          className="sidebar"
+        >
+          <div className="sidebar-logo-premium">
+            <div className="logo-glow" />
+            <img src="/logo.png" alt="Creinx" className="s-logo-main" />
+            <button className="collapse-btn-minimal" onClick={() => setCollapsed(!collapsed)}>
+              {collapsed ? <ChevronRight size={14} /> : <X size={14} />}
+            </button>
           </div>
-        )}
 
-        {/* ─── Navigation ─── */}
-        <nav className="sidebar-nav">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => `s-nav-item ${isActive ? 'active' : ''}`}
-            >
-              <span className="s-nav-icon">{item.icon}</span>
+          {/* ─── Role Badge ─── */}
+          {!collapsed && (
+            <div className="role-badge-wrap">
+              <div className={`role-badge ${user?.role}`}>
+                {user?.role === 'admin' ? '🛡 ADMIN' : '👤 EMPLOYEE'}
+              </div>
+            </div>
+          )}
+
+          {/* ─── Navigation ─── */}
+          <nav className="sidebar-nav">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) => `s-nav-item ${isActive ? 'active' : ''}`}
+              >
+                <span className="s-nav-icon">{item.icon}</span>
+                <AnimatePresence>
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="s-nav-label"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                {!collapsed && location.pathname === item.to && (
+                  <motion.div layoutId="active-pill" className="active-pill" />
+                )}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* ─── Bottom Controls ─── */}
+          <div className="sidebar-bottom">
+            <div className="s-user-card">
+              <div className="s-avatar">{initials}</div>
               <AnimatePresence>
                 {!collapsed && (
-                  <motion.span
+                  <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="s-nav-label"
+                    className="s-user-info"
                   >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              {!collapsed && location.pathname === item.to && (
-                <motion.div layoutId="active-pill" className="active-pill" />
-              )}
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* ─── Bottom Controls ─── */}
-        <div className="sidebar-bottom">
-          {/* User Profile with Settings Dropdown */}
-          <div className="s-user-card">
-            <div className="s-avatar">{initials}</div>
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="s-user-info"
-                >
-                  <span className="s-user-name">{user?.name || 'User'}</span>
-                  <span className="s-user-role">{user?.role}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Settings Dropdown Button */}
-            <div className="settings-menu-wrapper">
-              <motion.button
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setShowSettings(!showSettings)}
-                className="s-settings-btn"
-                title="Settings"
-              >
-                <Settings size={16} />
-              </motion.button>
-
-              {/* Dropdown Menu */}
-              <AnimatePresence>
-                {showSettings && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="settings-dropdown"
-                  >
-                    {/* Account Section */}
-                    <div className="dropdown-section">
-                      <div className="section-header">ACCOUNT</div>
-                      <div className="menu-item info-item">
-                        <span className="menu-label">Account</span>
-                        <span className="menu-desc">{user?.email}</span>
-                      </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="dropdown-divider"></div>
-
-                    {/* Settings Section */}
-                    <div className="dropdown-section">
-                      <div className="section-header">SETTINGS</div>
-                      <button onClick={handleChangePassword} className="menu-item">
-                        <Lock size={14} />
-                        <div className="menu-text">
-                          <span className="menu-label">Change Password</span>
-                          <span className="menu-desc">Update security</span>
-                        </div>
-                      </button>
-                      <button onClick={handleNotifications} className="menu-item">
-                        <Bell size={14} />
-                        <div className="menu-text">
-                          <span className="menu-label">Notifications</span>
-                          <span className="menu-desc">Alert settings</span>
-                        </div>
-                      </button>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="dropdown-divider"></div>
-
-                    {/* Session Section */}
-                    <div className="dropdown-section">
-                      <div className="section-header">SESSION</div>
-                      <button onClick={handleLogout} className="menu-item danger">
-                        <LogOut size={14} />
-                        <div className="menu-text">
-                          <span className="menu-label">Sign Out</span>
-                          <span className="menu-desc">End session</span>
-                        </div>
-                      </button>
-                    </div>
+                    <span className="s-user-name">{user?.name || 'User'}</span>
+                    <span className="s-user-role">{user?.role}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              <div className="settings-menu-wrapper">
+                <motion.button
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="s-settings-btn"
+                  title="Settings"
+                >
+                  <Settings size={16} />
+                </motion.button>
+
+                <AnimatePresence>
+                  {showSettings && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="settings-dropdown"
+                    >
+                      <div className="dropdown-section">
+                        <div className="section-header">ACCOUNT</div>
+                        <div className="menu-item info-item">
+                          <span className="menu-label">Account</span>
+                          <span className="menu-desc">{user?.email}</span>
+                        </div>
+                      </div>
+                      <div className="dropdown-divider"></div>
+                      <div className="dropdown-section">
+                        <div className="section-header">SETTINGS</div>
+                        <button onClick={handleChangePassword} className="menu-item">
+                          <Lock size={14} />
+                          <div className="menu-text">
+                            <span className="menu-label">Change Password</span>
+                            <span className="menu-desc">Update security</span>
+                          </div>
+                        </button>
+                        <button onClick={handleNotifications} className="menu-item">
+                          <Bell size={14} />
+                          <div className="menu-text">
+                            <span className="menu-label">Notifications</span>
+                            <span className="menu-desc">Alert settings</span>
+                          </div>
+                        </button>
+                      </div>
+                      <div className="dropdown-divider"></div>
+                      <div className="dropdown-section">
+                        <div className="section-header">SESSION</div>
+                        <button onClick={handleLogout} className="menu-item danger">
+                          <LogOut size={14} />
+                          <div className="menu-text">
+                            <span className="menu-label">Sign Out</span>
+                            <span className="menu-desc">End session</span>
+                          </div>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
-        </div>
-      </motion.aside>
+        </motion.aside>
+      )}
 
       {/* Global Toast Popup */}
       <AnimatePresence>
@@ -252,10 +242,85 @@ const AppLayout = ({ user, onLogout, children }) => {
       </AnimatePresence>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="main-content">
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '24px 40px 0', width: '100%', boxSizing: 'border-box' }}>
-          <LiveClock />
-        </div>
+      <main className={`main-content ${user?.role === 'employee' ? 'full-width-layout' : ''}`}>
+        
+        {/* Top Header for Employees */}
+        {user?.role === 'employee' && (
+          <div className="emp-top-nav">
+             <div className="emp-logo">
+               <img src="/logo.png" alt="Creinx" className="s-logo-main" style={{ width: '120px' }} />
+             </div>
+             <div className="emp-header-right">
+               <LiveClock />
+               <div className="settings-menu-wrapper" style={{ marginTop: '8px' }}>
+                 <motion.button
+                   whileHover={{ scale: 1.15 }}
+                   whileTap={{ scale: 0.9 }}
+                   onClick={() => setShowSettings(!showSettings)}
+                   className="s-settings-btn"
+                 >
+                   <Settings size={18} />
+                 </motion.button>
+                 
+                 <AnimatePresence>
+                   {showSettings && (
+                     <motion.div
+                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                       animate={{ opacity: 1, y: 0, scale: 1 }}
+                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                       transition={{ duration: 0.15 }}
+                       className="settings-dropdown emp-dropdown-pos"
+                     >
+                       <div className="dropdown-section">
+                         <div className="section-header">ACCOUNT</div>
+                         <div className="menu-item info-item">
+                           <span className="menu-label">Account</span>
+                           <span className="menu-desc">{user?.email}</span>
+                         </div>
+                       </div>
+                       <div className="dropdown-divider"></div>
+                       <div className="dropdown-section">
+                         <div className="section-header">SETTINGS</div>
+                         <button onClick={handleChangePassword} className="menu-item">
+                           <Lock size={14} />
+                           <div className="menu-text">
+                             <span className="menu-label">Change Password</span>
+                             <span className="menu-desc">Update security</span>
+                           </div>
+                         </button>
+                         <button onClick={handleNotifications} className="menu-item">
+                           <Bell size={14} />
+                           <div className="menu-text">
+                             <span className="menu-label">Notifications</span>
+                             <span className="menu-desc">Alert settings</span>
+                           </div>
+                         </button>
+                       </div>
+                       <div className="dropdown-divider"></div>
+                       <div className="dropdown-section">
+                         <div className="section-header">SESSION</div>
+                         <button onClick={handleLogout} className="menu-item danger">
+                           <LogOut size={14} />
+                           <div className="menu-text">
+                             <span className="menu-label">Sign Out</span>
+                             <span className="menu-desc">End session</span>
+                           </div>
+                         </button>
+                       </div>
+                     </motion.div>
+                   )}
+                 </AnimatePresence>
+               </div>
+             </div>
+          </div>
+        )}
+
+        {/* Global LiveClock for Admin */}
+        {user?.role === 'admin' && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '24px 40px 0', width: '100%', boxSizing: 'border-box' }}>
+            <LiveClock />
+          </div>
+        )}
         <motion.div
           key={location.pathname}
           initial={{ opacity: 0, y: 12 }}
@@ -639,9 +704,37 @@ const AppLayout = ({ user, onLogout, children }) => {
             radial-gradient(ellipse at 80% 100%, rgba(0,210,255,0.05) 0%, transparent 60%),
             #070810;
           min-height: 100vh;
-          padding-right: 12px; /* Increased offset for internal scrollbar */
-          scrollbar-width: thin; /* Firefox support */
-          scrollbar-color: #4deaff rgba(10, 12, 20, 0.98); /* Firefox support */
+          padding-right: 12px;
+        }
+
+        .main-content.full-width-layout {
+          padding-right: 0 !important;
+        }
+
+        .emp-top-nav {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          padding: 24px 40px;
+          width: 100%;
+          box-sizing: border-box;
+          z-index: 1000;
+        }
+
+        .emp-header-right {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 4px;
+        }
+
+        .emp-dropdown-pos {
+          top: 100% !important;
+          bottom: auto !important;
+          right: 0 !important;
+          left: auto !important;
+          margin-top: 12px;
+          margin-bottom: 0 !important;
         }
 
         .page-wrapper {
