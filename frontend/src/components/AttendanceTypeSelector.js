@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Building, Home, Calendar } from 'lucide-react';
 
 const AttendanceTypeSelector = ({ onTypeSelect, hasApprovedLeave }) => {
   const [selectedType, setSelectedType] = useState('work_office');
@@ -9,9 +10,9 @@ const AttendanceTypeSelector = ({ onTypeSelect, hasApprovedLeave }) => {
   };
 
   const types = [
-    { id: 'work_office', label: 'Work from Office', desc: 'Verified 100m geofence', icon: '🏢', color: 'cyan' },
-    { id: 'work_home', label: 'Work from Home', desc: 'Remote access enabled', icon: '🏠', color: 'purple' },
-    { id: 'leave', label: 'On Leave', desc: hasApprovedLeave ? 'Approved for today' : 'No approved leave', icon: '📅', color: 'red', disabled: !hasApprovedLeave },
+    { id: 'work_office', label: 'Work from Office', desc: 'Verified 100m geofence', icon: <Building size={24} />, color: 'cyan' },
+    { id: 'work_home', label: 'Work from Home', desc: 'Remote access enabled', icon: <Home size={24} />, color: 'purple' },
+    { id: 'leave', label: 'On Leave', desc: hasApprovedLeave ? 'Approved for today' : 'No approved leave', icon: <Calendar size={24} />, color: 'red', disabled: !hasApprovedLeave },
   ];
 
   return (
@@ -40,11 +41,11 @@ const AttendanceTypeSelector = ({ onTypeSelect, hasApprovedLeave }) => {
 
       <div className="glass-panel notice-box animate-fade-in">
         {selectedType === 'work_office' ? (
-          <p>📍 <strong>Geofencing Active:</strong> Your location coordinates will be cross-referenced with the office HQ. Please ensure GPS is active.</p>
+          <p><strong>Geofencing Active:</strong> Your location coordinates will be cross-referenced with the office HQ. Please ensure GPS is active.</p>
         ) : selectedType === 'work_home' ? (
-          <p>🔓 <strong>Remote Mode:</strong> No geofence verification required. Your session will be logged via IP address.</p>
+          <p><strong>Remote Mode:</strong> No geofence verification required. Your session will be logged via IP address.</p>
         ) : (
-          <p>🛌 <strong>Leave Mode:</strong> Attendance will be marked against your approved leave request.</p>
+          <p><strong>Leave Mode:</strong> Attendance will be marked against your approved leave request.</p>
         )}
       </div>
 
@@ -62,8 +63,9 @@ const AttendanceTypeSelector = ({ onTypeSelect, hasApprovedLeave }) => {
         .type-card.active { background: rgba(0, 210, 255, 0.1); border-color: #4deaff; box-shadow: 0 0 30px rgba(0, 210, 255, 0.15); }
         .type-card.disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .card-content { display: flex; align-items: flex-start; gap: 15px; z-index: 2; position: relative; }
-        .type-icon { font-size: 1.8rem; }
+        .card-content { display: flex; align-items: center; gap: 15px; z-index: 2; position: relative; }
+        .type-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 12px; color: #4deaff; flex-shrink: 0; }
+        .active .type-icon { background: rgba(0, 210, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.2); }
         .type-text { flex: 1; display: flex; flex-direction: column; gap: 4px; }
         .type-label { font-weight: 800; font-size: 1rem; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .type-desc { font-size: 0.8rem; color: #cbd5e1; font-weight: 500; line-height: 1.4; }

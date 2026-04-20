@@ -3,6 +3,27 @@ const LeaveRequest = require('../models/LeaveRequest');
 
 exports.validateAttendanceType = async (type, userData, locationData = null, leaveRequestId = null) => {
   try {
+    // === TIME RESTRICTION CHECK (10:00 AM - 10:30 AM) ===
+    // Only apply to Work from Office and Work from Home. Leave doesn't require active check-in during this window.
+    if (type === 'work_office' || type === 'work_home') {
+      const now = new Date();
+      // Use IST (UTC+5:30) for consistency
+      const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+      const hours = istTime.getUTCHours();
+      const minutes = istTime.getUTCMinutes();
+      
+      const currentTimeInMinutes = hours * 60 + minutes;
+      const startWindow = 10 * 60; // 10:00 AM
+      const endWindow = 10 * 60 + 30; // 10:30 AM
+
+      if (currentTimeInMinutes < startWindow || currentTimeInMinutes > endWindow) {
+        return { 
+          valid: false, 
+          error: `Attendance window is closed. (Open: 10:00 AM - 10:30 AM). Your current time: ${hours}:${minutes < 10 ? '0'+minutes : minutes}` 
+        };
+      }
+    }
+
     if (type === 'work_office') {
       if (!locationData || !locationData.latitude || !locationData.longitude) {
         return { valid: false, error: 'Location is required for work from office' };

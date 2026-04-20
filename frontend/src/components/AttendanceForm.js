@@ -154,6 +154,18 @@ const AttendanceForm = ({ onSuccess }) => {
   const alreadyCheckedIn = !!todayRecord;
   const alreadyCheckedOut = !!(todayRecord?.check_out);
 
+  // Time Window Check (10:00 AM - 10:30 AM)
+  const isWindowOpen = () => {
+    const now = new Date();
+    // Assuming matching server IST logic
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const currentTime = hours * 60 + minutes;
+    return currentTime >= 10 * 60 && currentTime <= 10 * 60 + 30;
+  };
+
+  const windowOpen = isWindowOpen();
+
   return (
     <div className="attendance-form-lite">
 
@@ -207,6 +219,12 @@ const AttendanceForm = ({ onSuccess }) => {
               <CheckCircle2 size={18} /><span>{success}</span>
             </motion.div>
           )}
+          {!alreadyCheckedIn && !windowOpen && attendanceType.type !== 'leave' && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="error-alert-haptic" style={{ background: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)' }}>
+              <AlertTriangle size={18} />
+              <span>Attendance window is CLOSED (10:00 AM - 10:30 AM). You will be marked absent.</span>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 
@@ -216,7 +234,7 @@ const AttendanceForm = ({ onSuccess }) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleMarkAttendance}
-          disabled={loading || (attendanceType.type === 'leave' && !hasApprovedLeave)}
+          disabled={loading || (attendanceType.type === 'leave' && !hasApprovedLeave) || (!windowOpen && attendanceType.type !== 'leave')}
           className="mark-action-btn-elite"
         >
           {loading ? (
