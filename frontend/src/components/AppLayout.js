@@ -90,9 +90,9 @@ const AppLayout = ({ user, onLogout, children }) => {
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="sidebar"
       >
-        <div className="sidebar-logo-premium" style={{ justifyContent: 'center', padding: '20px 14px' }}>
+        <div className="sidebar-logo-premium">
           <div className="logo-glow" />
-          <img src="/logo.png" alt="Creinx" className="s-logo-main" style={{ width: '210px', height: 'auto', maxWidth: '100%' }} />
+          <img src="/logo.png" alt="Creinx" className="s-logo-main" />
           <button className="collapse-btn-minimal" onClick={() => setCollapsed(!collapsed)}>
             {collapsed ? <ChevronRight size={14} /> : <X size={14} />}
           </button>
@@ -307,19 +307,20 @@ const AppLayout = ({ user, onLogout, children }) => {
 
         /* ─── Premium Sidebar Logo ─── */
         .sidebar-logo-premium {
-          padding: 28px 20px;
+          padding: 16px 20px;
           display: flex;
           align-items: center;
-          gap: 14px;
+          justify-content: center;
           position: relative;
-          margin-bottom: 8px;
+          margin-bottom: 4px;
           background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-          border-bottom: 1px solid rgba(255,255,255,0.03);
+          border-bottom: none !important;
         }
 
         .s-logo-main {
-          width: 32px;
+          width: 170px;
           height: auto;
+          max-width: 100%;
           filter: drop-shadow(0 0 8px rgba(77, 234, 255, 0.4));
           z-index: 2;
         }
