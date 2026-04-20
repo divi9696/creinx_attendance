@@ -276,6 +276,28 @@ const AppLayout = ({ user, onLogout, children }) => {
           overflow: hidden !important;
         }
 
+        /* ─── Global Scrollbar ─── */
+        :global(::-webkit-scrollbar) {
+          width: 8px;
+          height: 8px;
+        }
+
+        :global(::-webkit-scrollbar-track) {
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 10px;
+        }
+
+        :global(::-webkit-scrollbar-thumb) {
+          background: linear-gradient(180deg, rgba(77, 234, 255, 0.2), rgba(0, 86, 255, 0.4));
+          border-radius: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        :global(::-webkit-scrollbar-thumb:hover) {
+          background: #4deaff;
+          box-shadow: 0 0 15px rgba(77, 234, 255, 0.4);
+        }
+
         .app-shell {
           position: fixed;
           top: 0;
@@ -649,6 +671,7 @@ const AppLayout = ({ user, onLogout, children }) => {
             radial-gradient(ellipse at 80% 100%, rgba(0,210,255,0.05) 0%, transparent 60%),
             #070810;
           min-height: 100vh;
+          padding-right: 8px; /* Offset for internal scrollbar */
         }
 
         .page-wrapper {
