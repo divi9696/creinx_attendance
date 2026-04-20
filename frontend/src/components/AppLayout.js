@@ -90,10 +90,28 @@ const AppLayout = ({ user, onLogout, children }) => {
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="sidebar"
       >
-        <div className="sidebar-logo" style={{ justifyContent: 'center', padding: '12px 16px', borderBottom: 'none' }}>
-          <img src="/logo.png" alt="Creinx" className="s-logo-img" style={{ width: '180px', height: 'auto', maxWidth: '100%' }} />
-          <button className="collapse-btn" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }} onClick={() => setCollapsed(!collapsed)}>
-            {collapsed ? <ChevronRight size={16} /> : <X size={16} />}
+        <div className="sidebar-logo-premium">
+          <div className="logo-glow" />
+          <img src="/logo.png" alt="Creinx" className="s-logo-main" />
+          <AnimatePresence mode="wait">
+            {!collapsed && (
+              <motion.div
+                key="brand"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="s-brand-modern"
+              >
+                <div className="brand-main-wrap">
+                  <span className="brand-primary">CREINX</span>
+                  <span className="brand-glow">CREINX</span>
+                </div>
+                <span className="brand-edition">CORE OS v3.0</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <button className="collapse-btn-minimal" onClick={() => setCollapsed(!collapsed)}>
+            {collapsed ? <ChevronRight size={14} /> : <X size={14} />}
           </button>
         </div>
 
@@ -304,32 +322,85 @@ const AppLayout = ({ user, onLogout, children }) => {
           backdrop-filter: blur(20px);
         }
 
-        /* ─── Logo ─── */
-        .sidebar-logo {
+        /* ─── Premium Sidebar Logo ─── */
+        .sidebar-logo-premium {
+          padding: 28px 20px;
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 0 16px 20px;
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-          margin-bottom: 12px;
+          gap: 14px;
           position: relative;
+          margin-bottom: 8px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+          border-bottom: 1px solid rgba(255,255,255,0.03);
         }
 
-        .s-logo-img { width: 36px; height: auto; flex-shrink: 0; }
+        .s-logo-main {
+          width: 32px;
+          height: auto;
+          filter: drop-shadow(0 0 8px rgba(77, 234, 255, 0.4));
+          z-index: 2;
+        }
 
-        .s-brand { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-        .s-brand-name { font-size: 0.9rem; font-weight: 900; color: #fff; letter-spacing: 2px; white-space: nowrap; }
-        .s-brand-sub { font-size: 0.55rem; color: #4deaff; font-weight: 800; letter-spacing: 3px; margin-top: 2px; }
+        .s-brand-modern {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          z-index: 2;
+        }
 
-        .collapse-btn {
+        .brand-main-wrap {
+          position: relative;
+          display: flex;
+        }
+
+        .brand-primary {
+          font-size: 1.1rem;
+          font-weight: 900;
+          color: #fff;
+          letter-spacing: 2px;
+          line-height: 1;
+        }
+
+        .brand-glow {
+          position: absolute;
+          top: 0;
+          left: 0;
+          font-size: 1.1rem;
+          font-weight: 900;
+          color: #4deaff;
+          letter-spacing: 2px;
+          line-height: 1;
+          filter: blur(8px);
+          opacity: 0.5;
+        }
+
+        .brand-edition {
+          font-size: 0.55rem;
+          font-weight: 800;
+          color: rgba(77, 234, 255, 0.6);
+          letter-spacing: 1.5px;
+          margin-top: 4px;
+          text-transform: uppercase;
+        }
+
+        .collapse-btn-minimal {
           background: rgba(255,255,255,0.04);
           border: 1px solid rgba(255,255,255,0.08);
-          color: rgba(255,255,255,0.4);
-          width: 26px; height: 26px; border-radius: 8px;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+          color: rgba(255,255,255,0.3);
+          width: 24px;
+          height: 24px;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
         }
-        .collapse-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        .collapse-btn-minimal:hover {
+          color: #fff;
+          background: rgba(255,255,255,0.1);
+          border-color: rgba(77, 234, 255, 0.3);
+        }
 
         /* ─── Role Badge ─── */
         .role-badge-wrap { padding: 0 16px 14px; }
