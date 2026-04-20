@@ -90,26 +90,9 @@ const AppLayout = ({ user, onLogout, children }) => {
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="sidebar"
       >
-        <div className="sidebar-logo-premium">
+        <div className="sidebar-logo-premium" style={{ justifyContent: 'center', padding: '32px 14px' }}>
           <div className="logo-glow" />
-          <img src="/logo.png" alt="Creinx" className="s-logo-main" />
-          <AnimatePresence mode="wait">
-            {!collapsed && (
-              <motion.div
-                key="brand"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="s-brand-modern"
-              >
-                <div className="brand-main-wrap">
-                  <span className="brand-primary">CREINX</span>
-                  <span className="brand-glow">CREINX</span>
-                </div>
-                <span className="brand-edition">CORE OS v3.0</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <img src="/logo.png" alt="Creinx" className="s-logo-main" style={{ width: '210px', height: 'auto', maxWidth: '100%' }} />
           <button className="collapse-btn-minimal" onClick={() => setCollapsed(!collapsed)}>
             {collapsed ? <ChevronRight size={14} /> : <X size={14} />}
           </button>
