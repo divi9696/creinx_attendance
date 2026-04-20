@@ -90,23 +90,9 @@ const AppLayout = ({ user, onLogout, children }) => {
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="sidebar"
       >
-        {/* Logo */}
-        <div className="sidebar-logo">
-          <img src="/logo.png" alt="Creinx" className="s-logo-img" />
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="s-brand"
-              >
-                <span className="s-brand-name">CREINX</span>
-                <span className="s-brand-sub">OS v3.0</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <button className="collapse-btn" onClick={() => setCollapsed(!collapsed)}>
+        <div className="sidebar-logo" style={{ justifyContent: 'center', padding: '24px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <img src="/logo.png" alt="Creinx" className="s-logo-img" style={{ width: '48px', height: '48px' }} />
+          <button className="collapse-btn" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }} onClick={() => setCollapsed(!collapsed)}>
             {collapsed ? <ChevronRight size={16} /> : <X size={16} />}
           </button>
         </div>
@@ -367,28 +353,31 @@ const AppLayout = ({ user, onLogout, children }) => {
         .s-nav-item {
           display: flex;
           align-items: center;
-          gap: 14px;
-          padding: 12px 14px;
-          border-radius: 14px;
+          gap: 16px;
+          padding: 16px 18px;
+          border-radius: 16px;
           text-decoration: none;
           color: rgba(255,255,255,0.45);
-          font-size: 0.875rem;
+          font-size: 1rem;
           font-weight: 600;
           transition: all 0.2s ease;
           position: relative;
           white-space: nowrap;
           overflow: hidden;
           border: 1px solid transparent;
+          margin-bottom: 6px;
         }
         .s-nav-item:hover {
           color: #fff;
-          background: rgba(255,255,255,0.04);
-          border-color: rgba(255,255,255,0.06);
+          background: rgba(255,255,255,0.06);
+          border-color: rgba(255,255,255,0.1);
+          transform: translateX(4px);
         }
         .s-nav-item.active {
           color: #fff;
-          background: rgba(0,210,255,0.08);
-          border-color: rgba(0,210,255,0.18);
+          background: rgba(0,210,255,0.12);
+          border-color: rgba(0,210,255,0.25);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
 
         .s-nav-icon { flex-shrink: 0; display: flex; align-items: center; }
@@ -407,14 +396,16 @@ const AppLayout = ({ user, onLogout, children }) => {
 
         /* ─── Bottom ─── */
         .sidebar-bottom {
-          padding: 10px;
-          border-top: 1px solid rgba(255,255,255,0.05);
+          padding: 24px 14px;
+          border-top: 1px solid rgba(255,255,255,0.08);
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 12px;
           overflow: visible;
           position: relative;
           z-index: 100;
+          margin-top: auto;
+          background: linear-gradient(to top, rgba(10, 12, 20, 1), transparent);
         }
 
         .s-user-card {
