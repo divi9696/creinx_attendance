@@ -192,21 +192,24 @@ const Notifications = ({ user }) => {
       <style jsx>{`
         .settings-page {
           padding: 0;
-          min-height: 100vh;
+          height: calc(100vh - 80px);
+          overflow-y: auto;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.1) transparent;
         }
 
         .settings-container {
-          max-width: 800px;
+          max-width: 1000px;
           margin: 0 auto;
-          padding: 40px 30px;
+          padding: 20px 30px;
         }
 
         .settings-header {
           display: flex;
           align-items: flex-start;
           gap: 20px;
-          margin-bottom: 40px;
-          padding-bottom: 30px;
+          margin-bottom: 20px;
+          padding-bottom: 20px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
