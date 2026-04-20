@@ -149,7 +149,7 @@ const AppLayout = ({ user, onLogout, children }) => {
                   className="s-user-info"
                 >
                   <span className="s-user-name">{user?.name || 'User'}</span>
-                  <span className="s-user-role">{user?.role} <span style={{ opacity: 0.5, marginLeft: '6px' }}>v3.2.1-FIX</span></span>
+                  <span className="s-user-role">{user?.role} <span style={{ opacity: 0.5, marginLeft: '6px' }}>v3.2.3-FIX</span></span>
                 </motion.div>
               )}
             </AnimatePresence>
