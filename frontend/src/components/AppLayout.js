@@ -289,8 +289,14 @@ const AppLayout = ({ user, onLogout, children }) => {
         }
 
         :global(::-webkit-scrollbar-thumb) {
-          background: linear-gradient(180deg, #4deaff, #0056ff) !important;
+          background: transparent !important;
           border-radius: 10px !important;
+          border: 2px solid transparent !important;
+          transition: background 0.3s ease;
+        }
+
+        :global(*:hover::-webkit-scrollbar-thumb) {
+          background: linear-gradient(180deg, #4deaff, #0056ff) !important;
           border: 2px solid rgba(10, 12, 20, 0.9) !important;
           box-shadow: inset 0 0 6px rgba(0,0,0,0.3) !important;
         }
