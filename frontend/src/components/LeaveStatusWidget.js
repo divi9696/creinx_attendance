@@ -89,16 +89,7 @@ const LeaveStatusWidget = () => {
       animate={{ opacity: 1, y: 0 }}
       className="leave-status-widget"
     >
-      {/* Header */}
-      <div className="widget-header">
-        <div className="header-content">
-          <Calendar size={24} />
-          <div>
-            <h3>My Leave Requests</h3>
-            <p>View and track your leave applications</p>
-          </div>
-        </div>
-      </div>
+      {/* Internal Header Removed for Minimalism */}
 
       {/* Filter Buttons */}
       <div className="filter-buttons">

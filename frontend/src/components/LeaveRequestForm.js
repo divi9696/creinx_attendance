@@ -57,16 +57,7 @@ const LeaveRequestForm = ({ onSuccess }) => {
       className="leave-request-form-container"
     >
       <div className="leave-request-form">
-        {/* Header Section */}
-        <div className="form-header">
-          <div className="header-icon">
-            <Calendar size={24} />
-          </div>
-          <div>
-            <h3>Request Leave</h3>
-            <p>Submit a leave request for approval</p>
-          </div>
-        </div>
+        {/* Internal Header Removed for Minimalism */}
 
         {/* Messages */}
         {error && (
