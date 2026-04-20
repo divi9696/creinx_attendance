@@ -1,24 +1,38 @@
 const db = require('../config/db');
 
 class Announcement {
-  static async create(title, message, createdBy) {
+  static async create(title, message, createdBy, targetType = 'all', targetGroup = null, targetUserId = null) {
     const query = `
-      INSERT INTO announcements (title, message, created_by, created_at, status)
-      VALUES (?, ?, ?, NOW(), 'active')
+      INSERT INTO announcements (title, message, created_by, created_at, status, target_type, target_group, target_user_id)
+      VALUES (?, ?, ?, NOW(), 'active', ?, ?, ?)
     `;
-    const [result] = await db.query(query, [title, message, createdBy]);
-    return { id: result.insertId, title, message, createdBy };
+    const [result] = await db.query(query, [title, message, createdBy, targetType, targetGroup, targetUserId]);
+    return { id: result.insertId, title, message, createdBy, targetType, targetGroup, targetUserId };
   }
 
-  static async getAll(limit = 50) {
-    const query = `
-      SELECT id, title, message, created_by, created_at, status
+  static async getAll(limit = 50, employee = null) {
+    let query = `
+      SELECT id, title, message, created_by, created_at, status, target_type, target_group, target_user_id
       FROM announcements
       WHERE status = 'active'
-      ORDER BY created_at DESC
-      LIMIT ?
     `;
-    const [results] = await db.query(query, [limit]);
+    
+    const params = [];
+
+    if (employee && employee.role !== 'admin') {
+      // Filter for employees: show 'all', their specific department, or their specific user ID
+      query += ` AND (
+        target_type = 'all' 
+        OR (target_type = 'department' AND target_group = ?) 
+        OR (target_type = 'individual' AND target_user_id = ?)
+      )`;
+      params.push(employee.department, employee.id);
+    }
+
+    query += ` ORDER BY created_at DESC LIMIT ?`;
+    params.push(limit);
+
+    const [results] = await db.query(query, params);
     return results || [];
   }
 

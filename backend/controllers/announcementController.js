@@ -2,7 +2,7 @@ const Announcement = require('../models/Announcement');
 
 exports.createAnnouncement = async (req, res) => {
   try {
-    const { title, message } = req.body;
+    const { title, message, targetType, targetGroup, targetUserId } = req.body;
     const userId = req.user.id;
 
     // Only admins can create announcements
@@ -14,7 +14,7 @@ exports.createAnnouncement = async (req, res) => {
       return res.status(400).json({ error: 'Title and message are required' });
     }
 
-    const announcement = await Announcement.create(title, message, userId);
+    const announcement = await Announcement.create(title, message, userId, targetType, targetGroup, targetUserId);
     res.status(201).json({
       success: true,
       data: announcement,
@@ -28,7 +28,7 @@ exports.createAnnouncement = async (req, res) => {
 
 exports.getAnnouncements = async (req, res) => {
   try {
-    const announcements = await Announcement.getAll();
+    const announcements = await Announcement.getAll(50, req.user);
     res.json({
       success: true,
       data: announcements,

@@ -10,9 +10,35 @@ const Notifications = ({ user }) => {
   const [showAnnounceForm, setShowAnnounceForm] = useState(false);
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementText, setAnnouncementText] = useState('');
+  const [targetType, setTargetType] = useState('all'); // all, department, individual
+  const [targetGroup, setTargetGroup] = useState('');
+  const [targetUserId, setTargetUserId] = useState('');
+  const [employees, setEmployees] = useState([]);
+  const [departments, setDepartments] = useState([]);
+
   useEffect(() => {
     fetchNotifications();
-  }, []);
+    if (user?.role === 'admin') {
+      fetchEmployees();
+    }
+  }, [user]);
+
+  const fetchEmployees = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/admin/employees`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const emps = response.data.employees || [];
+      setEmployees(emps);
+      
+      // Extract unique departments
+      const deps = [...new Set(emps.map(e => e.department).filter(d => !!d))];
+      setDepartments(deps);
+    } catch (error) {
+      console.error('Failed to fetch employees', error);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -34,15 +60,33 @@ const Notifications = ({ user }) => {
 
   const sendAnnouncement = async () => {
     if (!announcementTitle.trim() || !announcementText.trim()) return;
+    if (targetType === 'department' && !targetGroup) {
+      alert('Please select a department');
+      return;
+    }
+    if (targetType === 'individual' && !targetUserId) {
+      alert('Please select a user');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       await axios.post(
         `${API_URL}/announcements`,
-        { title: announcementTitle, message: announcementText },
+        { 
+          title: announcementTitle, 
+          message: announcementText,
+          targetType,
+          targetGroup: targetType === 'department' ? targetGroup : null,
+          targetUserId: targetType === 'individual' ? targetUserId : null
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setAnnouncementTitle('');
       setAnnouncementText('');
+      setTargetType('all');
+      setTargetGroup('');
+      setTargetUserId('');
       setShowAnnounceForm(false);
       fetchNotifications();
     } catch (error) {
@@ -115,8 +159,57 @@ const Notifications = ({ user }) => {
                     padding: '12px',
                     borderRadius: '10px',
                     fontFamily: 'inherit',
+                    marginBottom: '10px'
                   }}
                 />
+
+                {/* Target Selection UI */}
+                <div className="target-selection" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
+                  <div className="target-group" style={{ flex: 1, minWidth: '150px' }}>
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#4deaff', marginBottom: '4px', textTransform: 'uppercase', fontWeight: '800' }}>Select Audience</label>
+                    <select 
+                      value={targetType} 
+                      onChange={(e) => setTargetType(e.target.value)}
+                      className="form-input"
+                      style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white', padding: '10px', borderRadius: '8px', width: '100%', fontSize: '0.9rem' }}
+                    >
+                      <option value="all">All Personnel</option>
+                      <option value="department">By Department</option>
+                      <option value="individual">Specific Individual</option>
+                    </select>
+                  </div>
+
+                  {targetType === 'department' && (
+                    <div className="target-group" style={{ flex: 1, minWidth: '150px' }}>
+                      <label style={{ display: 'block', fontSize: '0.7rem', color: '#a855f7', marginBottom: '4px', textTransform: 'uppercase', fontWeight: '800' }}>Target Department</label>
+                      <select 
+                        value={targetGroup} 
+                        onChange={(e) => setTargetGroup(e.target.value)}
+                        className="form-input"
+                        style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white', padding: '10px', borderRadius: '8px', width: '100%', fontSize: '0.9rem' }}
+                      >
+                        <option value="">Select Department...</option>
+                        {departments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
+                      </select>
+                    </div>
+                  )}
+
+                  {targetType === 'individual' && (
+                    <div className="target-group" style={{ flex: 2, minWidth: '200px' }}>
+                      <label style={{ display: 'block', fontSize: '0.7rem', color: '#f59e0b', marginBottom: '4px', textTransform: 'uppercase', fontWeight: '800' }}>Target Employee</label>
+                      <select 
+                        value={targetUserId} 
+                        onChange={(e) => setTargetUserId(e.target.value)}
+                        className="form-input"
+                        style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white', padding: '10px', borderRadius: '8px', width: '100%', fontSize: '0.9rem' }}
+                      >
+                        <option value="">Select Personnel...</option>
+                        {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name} ({emp.employee_uid}) - {emp.department}</option>)}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
                 <textarea
                   value={announcementText}
                   onChange={(e) => setAnnouncementText(e.target.value)}
@@ -165,7 +258,16 @@ const Notifications = ({ user }) => {
                   className="notification-item"
                 >
                   <div className="notif-content">
-                    {notif.title && <h3 style={{color: '#4deaff', margin: '0 0 4px', fontSize: '1rem'}}>{notif.title}</h3>}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      {notif.target_type === 'department' ? (
+                        <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(168,85,247,0.2)', color: '#a855f7', fontWeight: '800', border: '1px solid rgba(168,85,247,0.3)' }}>DEPT: {notif.target_group}</span>
+                      ) : notif.target_type === 'individual' ? (
+                        <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(245,158,11,0.2)', color: '#f59e0b', fontWeight: '800', border: '1px solid rgba(245,158,11,0.3)' }}>INDIVIDUAL</span>
+                      ) : (
+                        <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(77,234,255,0.2)', color: '#4deaff', fontWeight: '800', border: '1px solid rgba(77,234,255,0.3)' }}>ALL STAFF</span>
+                      )}
+                    </div>
+                    {notif.title && <h3 style={{color: '#fff', margin: '0 0 4px', fontSize: '1rem', fontWeight: '700'}}>{notif.title}</h3>}
                     <p className="notif-message">{notif.message}</p>
                     <span className="notif-time">
                       {new Date(notif.created_at || notif.createdAt).toLocaleDateString()}
