@@ -277,35 +277,6 @@ const AppLayout = ({ user, onLogout, children }) => {
           background: #070810 !important;
         }
 
-        /* ─── Global Scrollbar ─── */
-        :global(::-webkit-scrollbar) {
-          width: 8px !important;
-          height: 8px !important;
-        }
-
-        :global(::-webkit-scrollbar-track) {
-          background: rgba(10, 12, 20, 0.98) !important;
-          border-radius: 10px !important;
-        }
-
-        :global(::-webkit-scrollbar-thumb) {
-          background: transparent !important;
-          border-radius: 10px !important;
-          border: 2px solid transparent !important;
-          transition: background 0.3s ease;
-        }
-
-        :global(*:hover::-webkit-scrollbar-thumb) {
-          background: linear-gradient(180deg, #4deaff, #0056ff) !important;
-          border: 2px solid rgba(10, 12, 20, 0.9) !important;
-          box-shadow: inset 0 0 6px rgba(0,0,0,0.3) !important;
-        }
-
-        :global(::-webkit-scrollbar-thumb:hover) {
-          background: #4deaff !important;
-          box-shadow: 0 0 15px rgba(77, 234, 255, 0.6) !important;
-        }
-
         .app-shell {
           position: fixed;
           top: 0;
