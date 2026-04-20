@@ -14,6 +14,7 @@ router.get('/employee/:employeeId', authenticateToken, authorizeRole(['admin']),
 router.get('/employee/:id/full-report', authenticateToken, authorizeRole(['admin']), adminController.getEmployeeFullReport);
 router.post('/leave/:id/review', authenticateToken, authorizeRole(['admin']), adminController.handleLeaveReview);
 router.post('/late-permission', authenticateToken, authorizeRole(['admin']), adminController.grantLatePermission);
+router.post('/grant-leave', authenticateToken, authorizeRole(['admin']), adminController.grantLeave);
 router.get('/late-permissions', authenticateToken, authorizeRole(['admin']), adminController.getLatePermissions);
 router.delete('/employee/:id/device-ip', authenticateToken, authorizeRole(['admin']), adminController.resetDeviceIp);
 

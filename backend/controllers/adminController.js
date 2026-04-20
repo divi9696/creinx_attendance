@@ -324,3 +324,51 @@ exports.resetDeviceIp = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.grantLeave = async (req, res) => {
+  try {
+    const { employee_id, start_date, end_date, reason } = req.body;
+    if (!start_date || !end_date) return res.status(400).json({ error: 'Start and end dates are required' });
+    if (!employee_id) return res.status(400).json({ error: 'Employee selection is required' });
+
+    let employees = [];
+    if (employee_id === 'all') {
+      employees = await Employee.findAll();
+      // Filter out admins if needed, though "all" usually means everyone
+    } else {
+      const emp = await Employee.findById(employee_id);
+      if (!emp) return res.status(404).json({ error: 'Employee not found' });
+      employees = [emp];
+    }
+
+    const start = new Date(start_date);
+    const end = new Date(end_date);
+    
+    let count = 0;
+    // Iterate through dates
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      for (const emp of employees) {
+        // Check if record already exists for this date
+        const existing = await Attendance.getAttendanceByEmployeeAndDate(emp.id, dateStr);
+        if (!existing) {
+          await Attendance.markAttendance({
+            employee_id: emp.id,
+            check_in: `${dateStr} 09:00:00`,
+            attendance_type: 'leave',
+            ip_address: 'ADMIN_GRANTED',
+            latitude: null,
+            longitude: null
+          });
+          // Auto check-out for leave record consistency
+          await Attendance.checkOut(emp.id, `${dateStr} 18:00:00`);
+          count++;
+        }
+      }
+    }
+
+    res.json({ message: `Successfully granted leave to ${employee_id === 'all' ? 'all employees' : employees[0].name} for the selected period. (${count} record entries created)` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

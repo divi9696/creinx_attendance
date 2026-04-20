@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Clock, Calendar, CheckCircle, XCircle,
   ChevronDown, ChevronUp, Loader2, AlertTriangle,
-  Building, Home, FileText, Check, X, ShieldAlert
+  Building, Home, FileText, Check, X, ShieldAlert,
+  Briefcase, Shield
 } from 'lucide-react';
 
 const AdminStaffPanel = () => {
@@ -17,8 +18,16 @@ const AdminStaffPanel = () => {
   const [reviewMsg, setReviewMsg] = useState('');
   const [latePermEmpId, setLatePermEmpId] = useState('');
   const [latePermReason, setLatePermReason] = useState('');
-  const [latePermMsg, setLatePermMsg] = useState({ text: '', type: '' });
+  const [latePermMsg, setLatePermMsg] = useState({ text: '', type: 'success' });
   const [latePermLoading, setLatePermLoading] = useState(false);
+
+  // Grant Administrative Leave State
+  const [grantLeaveEmpId, setGrantLeaveEmpId] = useState('');
+  const [grantLeaveStart, setGrantLeaveStart] = useState('');
+  const [grantLeaveEnd, setGrantLeaveEnd] = useState('');
+  const [grantLeaveReason, setGrantLeaveReason] = useState('');
+  const [grantLeaveLoading, setGrantLeaveLoading] = useState(false);
+  const [grantLeaveMsg, setGrantLeaveMsg] = useState({ text: '', type: 'success' });
 
   useEffect(() => {
     fetchEmployees();
@@ -262,6 +271,70 @@ const AdminStaffPanel = () => {
           >
             {latePermLoading ? <Loader2 size={16} className="spinner-icon" /> : <ShieldAlert size={16} />}
             Grant Late Access
+          </motion.button>
+        </div>
+      </div>
+
+      {/* === GRANT ADMINISTRATIVE LEAVE SECTION === */}
+      <div className="panel-section">
+        <div className="section-title-row">
+          <div className="section-icon-box" style={{ background: 'rgba(168,85,247,0.08)', color: '#a855f7' }}><Briefcase size={18} /></div>
+          <h3>Grant Administrative Leave</h3>
+        </div>
+        <p className="late-perm-desc">Forcefully assign leave to a specific employee or the entire staff for a chosen period.</p>
+
+        <AnimatePresence>
+          {grantLeaveMsg.text && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className={`late-perm-toast ${grantLeaveMsg.type}`}>
+              {grantLeaveMsg.type === 'success' ? <CheckCircle size={14} /> : <AlertTriangle size={14} />}
+              {grantLeaveMsg.text}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="late-perm-form">
+          <select
+            className="late-perm-select"
+            value={grantLeaveEmpId}
+            onChange={e => setGrantLeaveEmpId(e.target.value)}
+          >
+            <option value="">— Select Recipient —</option>
+            <option value="all" style={{ color: '#4deaff', fontWeight: 'bold' }}>ALL EMPLOYEES (Bulk Grant)</option>
+            {employees.filter(e => e.role === 'employee').map(emp => (
+              <option key={emp.id} value={emp.id}>{emp.name} ({emp.employee_uid})</option>
+            ))}
+          </select>
+          <input
+            type="date"
+            className="late-perm-input"
+            value={grantLeaveStart}
+            onChange={e => setGrantLeaveStart(e.target.value)}
+            title="Start Date"
+          />
+          <input
+            type="date"
+            className="late-perm-input"
+            value={grantLeaveEnd}
+            onChange={e => setGrantLeaveEnd(e.target.value)}
+            title="End Date"
+          />
+          <input
+            className="late-perm-input"
+            placeholder="Reason for Administrative Grant"
+            value={grantLeaveReason}
+            onChange={e => setGrantLeaveReason(e.target.value)}
+            style={{ flex: '2', minWidth: '250px' }}
+          />
+          <motion.button
+            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+            onClick={submitGrantLeave}
+            disabled={grantLeaveLoading}
+            className="late-perm-btn"
+            style={{ background: 'rgba(168,85,247,0.12)', color: '#a855f7', borderColor: 'rgba(168,85,247,0.3)' }}
+          >
+            {grantLeaveLoading ? <Loader2 size={16} className="spinner-icon" /> : <Shield size={16} />}
+            Grant Leave
           </motion.button>
         </div>
       </div>
