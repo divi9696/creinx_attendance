@@ -156,6 +156,10 @@ const AttendanceForm = ({ onSuccess }) => {
 
   // Time Window Check (10:00 AM - 10:30 AM)
   const isWindowOpen = () => {
+    // BYPASS FOR PRIMARY ADMIN (CRX0001)
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.employee_uid === 'CRX0001') return true;
+
     const now = new Date();
     // Assuming matching server IST logic
     const hours = now.getHours();

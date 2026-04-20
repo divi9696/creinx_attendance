@@ -5,7 +5,8 @@ exports.validateAttendanceType = async (type, userData, locationData = null, lea
   try {
     // === TIME RESTRICTION CHECK (10:00 AM - 10:30 AM) ===
     // Only apply to Work from Office and Work from Home. Leave doesn't require active check-in during this window.
-    if (type === 'work_office' || type === 'work_home') {
+    // BYPASS FOR PRIMARY ADMIN (CRX0001)
+    if ((type === 'work_office' || type === 'work_home') && userData?.employee_uid !== 'CRX0001') {
       const now = new Date();
       // Use IST (UTC+5:30) for consistency
       const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
