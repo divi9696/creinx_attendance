@@ -150,16 +150,34 @@ const Dashboards = () => {
         ) : activeTab === 'leave' ? (
           <motion.div key="leave" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="emp-grid">
             <motion.div className="emp-card adm-section-card">
+              <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="adm-card-title">
+                  <Calendar size={18} color="#a855f7" />
+                  <h3>Request Leave</h3>
+                </div>
+              </div>
               <LeaveRequestForm onSuccess={handleLeaveSuccess} />
             </motion.div>
 
             <motion.div className="emp-card adm-section-card">
+              <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="adm-card-title">
+                  <MessageSquare size={18} color="#22c55e" />
+                  <h3>My Leave Requests</h3>
+                </div>
+              </div>
               <LeaveStatusWidget key={workspaceRefreshKey} />
             </motion.div>
           </motion.div>
         ) : (
           <motion.div key="workspace" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="emp-grid-single-admin">
             <motion.div className="emp-card adm-section-card">
+              <div className="adm-card-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="adm-card-title">
+                  <Clock size={18} color="#4deaff" />
+                  <h3>Daily Attendance</h3>
+                </div>
+              </div>
               <AttendanceForm onSuccess={handleAttendanceSuccess} />
             </motion.div>
           </motion.div>
