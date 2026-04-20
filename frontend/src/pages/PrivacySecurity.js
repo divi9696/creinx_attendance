@@ -64,7 +64,6 @@ const PrivacySecurity = ({ user }) => {
           </div>
           <div>
             <h1>Privacy & Security</h1>
-            <p>Control your privacy settings and security options</p>
           </div>
         </div>
 

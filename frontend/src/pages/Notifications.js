@@ -78,7 +78,6 @@ const Notifications = ({ user }) => {
           </div>
           <div>
             <h1>Notifications Center</h1>
-            <p>Manage announcements and notification preferences</p>
           </div>
         </div>
 

@@ -143,7 +143,6 @@ const Employees = () => {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="emp-header">
         <div>
           <h1 className="emp-title">Staff Management</h1>
-          <p className="emp-sub">{employees.length} personnel registered in system</p>
         </div>
         <motion.button
           whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}

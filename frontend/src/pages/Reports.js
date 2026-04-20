@@ -19,7 +19,6 @@ const Reports = () => {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rpt-header">
         <div>
           <h1 className="rpt-title">Archive & Logs</h1>
-          <p className="rpt-sub">Access comprehensive attendance archives and individual personnel analytics</p>
         </div>
         <div className="rpt-actions">
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleRefresh} className="rpt-btn primary">

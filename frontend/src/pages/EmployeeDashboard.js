@@ -38,7 +38,6 @@ const EmployeeDashboard = () => {
       >
         <div>
           <h1 className="emp-page-title">{greeting}, {user?.name?.split(' ')[0] || 'User'} 👋</h1>
-          <p className="emp-page-sub">Log your attendance and manage leave requests below.</p>
         </div>
       </motion.div>
 
