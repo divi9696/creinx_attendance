@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -15,6 +15,20 @@ const AppLayout = ({ user, onLogout, children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [unreadAnnouncement, setUnreadAnnouncement] = useState(null);
+  const settingsRef = useRef(null);
+
+  // Close settings dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
+        setShowSettings(false);
+      }
+    };
+    if (showSettings) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSettings]);
 
   React.useEffect(() => {
     const fetchLatestAnnouncement = async () => {
@@ -248,11 +262,11 @@ const AppLayout = ({ user, onLogout, children }) => {
         {user?.role === 'employee' && (
           <div className="emp-top-nav">
              <div className="emp-logo">
-               <img src="/logo.png" alt="Creinx" className="s-logo-main" style={{ width: '120px' }} />
+               <img src="/logo.png" alt="Creinx" className="s-logo-main" style={{ width: '160px' }} />
              </div>
              <div className="emp-header-right">
                <LiveClock />
-               <div className="settings-menu-wrapper" style={{ marginTop: '8px' }}>
+               <div className="settings-menu-wrapper" ref={settingsRef} style={{ marginTop: '8px' }}>
                  <motion.button
                    whileHover={{ scale: 1.15 }}
                    whileTap={{ scale: 0.9 }}
