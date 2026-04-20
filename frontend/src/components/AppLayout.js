@@ -270,32 +270,34 @@ const AppLayout = ({ user, onLogout, children }) => {
       <style jsx>{`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap');
 
-        :global(body) {
+        :global(html), :global(body) {
           margin: 0 !important;
           padding: 0 !important;
           overflow: hidden !important;
+          background: #070810 !important;
         }
 
         /* ─── Global Scrollbar ─── */
         :global(::-webkit-scrollbar) {
-          width: 8px;
-          height: 8px;
+          width: 8px !important;
+          height: 8px !important;
         }
 
         :global(::-webkit-scrollbar-track) {
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: 10px;
+          background: rgba(10, 12, 20, 0.98) !important;
+          border-radius: 10px !important;
         }
 
         :global(::-webkit-scrollbar-thumb) {
-          background: linear-gradient(180deg, rgba(77, 234, 255, 0.2), rgba(0, 86, 255, 0.4));
-          border-radius: 10px;
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          background: linear-gradient(180deg, #4deaff, #0056ff) !important;
+          border-radius: 10px !important;
+          border: 2px solid rgba(10, 12, 20, 0.9) !important;
+          box-shadow: inset 0 0 6px rgba(0,0,0,0.3) !important;
         }
 
         :global(::-webkit-scrollbar-thumb:hover) {
-          background: #4deaff;
-          box-shadow: 0 0 15px rgba(77, 234, 255, 0.4);
+          background: #4deaff !important;
+          box-shadow: 0 0 15px rgba(77, 234, 255, 0.6) !important;
         }
 
         .app-shell {
@@ -671,7 +673,9 @@ const AppLayout = ({ user, onLogout, children }) => {
             radial-gradient(ellipse at 80% 100%, rgba(0,210,255,0.05) 0%, transparent 60%),
             #070810;
           min-height: 100vh;
-          padding-right: 8px; /* Offset for internal scrollbar */
+          padding-right: 12px; /* Increased offset for internal scrollbar */
+          scrollbar-width: thin; /* Firefox support */
+          scrollbar-color: #4deaff rgba(10, 12, 20, 0.98); /* Firefox support */
         }
 
         .page-wrapper {
