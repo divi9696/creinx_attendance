@@ -170,8 +170,7 @@ const Notifications = ({ user }) => {
                     <select 
                       value={targetType} 
                       onChange={(e) => setTargetType(e.target.value)}
-                      className="form-input"
-                      style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white', padding: '10px', borderRadius: '8px', width: '100%', fontSize: '0.9rem' }}
+                      className="form-input custom-select"
                     >
                       <option value="all">All Personnel</option>
                       <option value="department">By Department</option>
@@ -185,8 +184,7 @@ const Notifications = ({ user }) => {
                       <select 
                         value={targetGroup} 
                         onChange={(e) => setTargetGroup(e.target.value)}
-                        className="form-input"
-                        style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white', padding: '10px', borderRadius: '8px', width: '100%', fontSize: '0.9rem' }}
+                        className="form-input custom-select"
                       >
                         <option value="">Select Department...</option>
                         {departments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
@@ -200,8 +198,7 @@ const Notifications = ({ user }) => {
                       <select 
                         value={targetUserId} 
                         onChange={(e) => setTargetUserId(e.target.value)}
-                        className="form-input"
-                        style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white', padding: '10px', borderRadius: '8px', width: '100%', fontSize: '0.9rem' }}
+                        className="form-input custom-select"
                       >
                         <option value="">Select Personnel...</option>
                         {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name} ({emp.employee_uid}) - {emp.department}</option>)}
@@ -405,6 +402,29 @@ const Notifications = ({ user }) => {
           display: flex;
           flex-direction: column;
           gap: 12px;
+        }
+
+        .custom-select {
+          background: #1a1f2e !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          color: white !important;
+          padding: 10px !important;
+          border-radius: 8px !important;
+          width: 100% !important;
+          font-size: 0.9rem !important;
+          cursor: pointer !important;
+          outline: none !important;
+        }
+
+        .custom-select option {
+          background: #1a1f2e;
+          color: white;
+          padding: 10px;
+        }
+
+        .custom-select:focus {
+          border-color: #4deaff !important;
+          box-shadow: 0 0 15px rgba(77, 234, 255, 0.1) !important;
         }
 
         .form-textarea {
