@@ -417,8 +417,8 @@ const Notifications = ({ user }) => {
         }
 
         .custom-select option {
-          background: #ffffff !important;
-          color: #000000 !important;
+          background: #1a1f2e !important;
+          color: #ffffff !important;
         }
 
         .custom-select:focus {
