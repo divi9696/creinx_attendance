@@ -192,24 +192,24 @@ const Notifications = ({ user }) => {
       <style jsx>{`
         .settings-page {
           padding: 0;
-          height: calc(100vh - 80px);
-          overflow-y: auto;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,255,255,0.1) transparent;
+          overflow: hidden !important;
+          display: flex;
+          flex-direction: column;
         }
 
         .settings-container {
           max-width: 1000px;
+          width: 100%;
           margin: 0 auto;
-          padding: 20px 30px;
+          padding: 0 30px;
         }
 
         .settings-header {
           display: flex;
           align-items: flex-start;
           gap: 20px;
-          margin-bottom: 20px;
-          padding-bottom: 20px;
+          margin-bottom: 12px;
+          padding-bottom: 12px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -240,8 +240,8 @@ const Notifications = ({ user }) => {
           background: rgba(10, 12, 20, 0.5);
           border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 16px;
-          padding: 24px;
-          margin-bottom: 24px;
+          padding: 20px;
+          margin-bottom: 15px;
           backdrop-filter: blur(20px);
         }
 
