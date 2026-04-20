@@ -97,6 +97,30 @@ const AdminStaffPanel = () => {
     }
   };
 
+  const submitGrantLeave = async () => {
+    if (!grantLeaveEmpId || !grantLeaveStart || !grantLeaveEnd) {
+      setGrantLeaveMsg({ text: 'Please fill all required fields.', type: 'error' });
+      return;
+    }
+    setGrantLeaveLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}/admin/grant-leave`, {
+        employee_id: grantLeaveEmpId,
+        start_date: grantLeaveStart,
+        end_date: grantLeaveEnd,
+        reason: grantLeaveReason
+      }, { headers: headers() });
+      
+      setGrantLeaveMsg({ text: res.data.message, type: 'success' });
+      setGrantLeaveEmpId(''); setGrantLeaveStart(''); setGrantLeaveEnd(''); setGrantLeaveReason('');
+      setTimeout(() => setGrantLeaveMsg({ text: '', type: 'success' }), 5000);
+      fetchPendingLeaves();
+      fetchLiveToday();
+    } catch (e) {
+      setGrantLeaveMsg({ text: e.response?.data?.error || 'Failed to grant leave', type: 'error' });
+    } finally { setGrantLeaveLoading(false); }
+  };
+
   const fmt = (dt) => {
     if (!dt) return <span style={{ color: '#475569' }}>—</span>;
     return new Date(dt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -588,5 +612,3 @@ const AdminStaffPanel = () => {
 };
 
 export default AdminStaffPanel;
-/ /   T r i g g e r   r e b u i l d  
- 
