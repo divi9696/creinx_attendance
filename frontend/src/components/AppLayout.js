@@ -90,8 +90,8 @@ const AppLayout = ({ user, onLogout, children }) => {
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="sidebar"
       >
-        <div className="sidebar-logo" style={{ justifyContent: 'center', padding: '24px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <img src="/logo.png" alt="Creinx" className="s-logo-img" style={{ width: '48px', height: '48px' }} />
+        <div className="sidebar-logo" style={{ justifyContent: 'center', padding: '24px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <img src="/logo.png" alt="Creinx" className="s-logo-img" style={{ width: '180px', height: 'auto', maxWidth: '100%' }} />
           <button className="collapse-btn" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }} onClick={() => setCollapsed(!collapsed)}>
             {collapsed ? <ChevronRight size={16} /> : <X size={16} />}
           </button>
